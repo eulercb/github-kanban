@@ -1,0 +1,118 @@
+:root,
+[data-theme='light'] {
+  /* Background */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f6f8fa;
+  --bg-tertiary: #ebedef;
+  --bg-canvas: #f0f2f5;
+  --bg-overlay: rgba(0, 0, 0, 0.4);
+
+  /* Text */
+  --text-primary: #1f2328;
+  --text-secondary: #656d76;
+  --text-tertiary: #8b949e;
+  --text-link: #0969da;
+  --text-on-accent: #ffffff;
+
+  /* Borders */
+  --border-default: #d0d7de;
+  --border-muted: #d8dee4;
+  --border-subtle: #e8ebef;
+
+  /* Accent */
+  --accent-primary: #0969da;
+  --accent-primary-hover: #0860ca;
+  --accent-success: #1a7f37;
+  --accent-danger: #cf222e;
+  --accent-warning: #bf8700;
+  --accent-info: #0969da;
+  --accent-purple: #8250df;
+  --accent-merged: #8250df;
+
+  /* Cards */
+  --card-bg: #ffffff;
+  --card-bg-hover: #f6f8fa;
+  --card-shadow: 0 1px 3px rgba(31, 35, 40, 0.08);
+  --card-shadow-hover: 0 3px 8px rgba(31, 35, 40, 0.12);
+
+  /* Column */
+  --column-bg: #f6f8fa;
+  --column-header-bg: #ebedef;
+
+  /* Buttons */
+  --btn-primary-bg: #0969da;
+  --btn-primary-text: #ffffff;
+  --btn-secondary-bg: #f6f8fa;
+  --btn-secondary-text: #24292f;
+  --btn-secondary-border: #d0d7de;
+  --btn-danger-bg: #cf222e;
+  --btn-danger-text: #ffffff;
+
+  /* Input */
+  --input-bg: #ffffff;
+  --input-border: #d0d7de;
+  --input-focus-border: #0969da;
+  --input-placeholder: #8b949e;
+
+  /* Misc */
+  --scrollbar-thumb: #c1c8ce;
+  --scrollbar-track: transparent;
+  --focus-ring: 0 0 0 3px rgba(9, 105, 218, 0.3);
+  --transition-speed: 150ms;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+}
+
+[data-theme='dark'] {
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-tertiary: #21262d;
+  --bg-canvas: #010409;
+  --bg-overlay: rgba(0, 0, 0, 0.6);
+
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --text-tertiary: #6e7681;
+  --text-link: #58a6ff;
+  --text-on-accent: #ffffff;
+
+  --border-default: #30363d;
+  --border-muted: #21262d;
+  --border-subtle: #1b1f24;
+
+  --accent-primary: #58a6ff;
+  --accent-primary-hover: #79b8ff;
+  --accent-success: #3fb950;
+  --accent-danger: #f85149;
+  --accent-warning: #d29922;
+  --accent-info: #58a6ff;
+  --accent-purple: #bc8cff;
+  --accent-merged: #bc8cff;
+
+  --card-bg: #161b22;
+  --card-bg-hover: #1c2128;
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --card-shadow-hover: 0 3px 8px rgba(0, 0, 0, 0.4);
+
+  --column-bg: #161b22;
+  --column-header-bg: #21262d;
+
+  --btn-primary-bg: #238636;
+  --btn-primary-text: #ffffff;
+  --btn-secondary-bg: #21262d;
+  --btn-secondary-text: #c9d1d9;
+  --btn-secondary-border: #363b42;
+  --btn-danger-bg: #da3633;
+  --btn-danger-text: #ffffff;
+
+  --input-bg: #0d1117;
+  --input-border: #30363d;
+  --input-focus-border: #58a6ff;
+  --input-placeholder: #6e7681;
+
+  --scrollbar-thumb: #484f58;
+  --scrollbar-track: transparent;
+  --focus-ring: 0 0 0 3px rgba(88, 166, 255, 0.3);
+}
