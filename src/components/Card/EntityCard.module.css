@@ -1,0 +1,169 @@
+.card {
+  display: block;
+  padding: 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-speed);
+  text-decoration: none !important;
+  color: inherit;
+}
+
+.card:hover {
+  background: var(--card-bg-hover);
+  box-shadow: var(--card-shadow-hover);
+  border-color: var(--border-muted);
+}
+
+.card.compact {
+  padding: 8px 12px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.compact .header {
+  margin-bottom: 2px;
+  align-items: center;
+}
+
+.header svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.compact .header svg {
+  margin-top: 0;
+}
+
+.iconOpen {
+  color: var(--accent-success);
+}
+
+.iconClosed {
+  color: var(--accent-danger);
+}
+
+.iconMerged {
+  color: var(--accent-merged);
+}
+
+.iconDraft {
+  color: var(--text-tertiary);
+}
+
+.title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.compact .title {
+  -webkit-line-clamp: 1;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-left: 24px;
+}
+
+.compact .meta {
+  margin-left: 24px;
+}
+
+.repo {
+  color: var(--text-secondary);
+}
+
+.number {
+  color: var(--text-tertiary);
+}
+
+.draftBadge {
+  padding: 0 6px;
+  background: var(--bg-tertiary);
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.time {
+  margin-left: auto;
+}
+
+.labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+  margin-left: 24px;
+}
+
+.label {
+  display: inline-block;
+  padding: 1px 8px;
+  border: 1px solid;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  margin-left: 24px;
+}
+
+.assignees {
+  display: flex;
+  align-items: center;
+  gap: -4px;
+}
+
+.assigneeAvatar {
+  border-radius: 50%;
+  border: 2px solid var(--card-bg);
+  margin-left: -4px;
+}
+
+.assigneeAvatar:first-child {
+  margin-left: 0;
+}
+
+.moreAssignees {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-left: 4px;
+}
+
+.stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
