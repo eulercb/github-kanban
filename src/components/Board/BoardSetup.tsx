@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import type { BoardConfig, ColumnConfig } from '../../types';
 import { generateId } from '../../utils/id';
-import { searchRepos } from '../../services/github';
+import { searchRepos, fetchUserOrgs } from '../../services/github';
 import { useApp } from '../../contexts/AppContext';
 import { useDebounce } from '../../hooks/useDebounce';
 import styles from './BoardSetup.module.css';
@@ -112,8 +112,16 @@ export function BoardSetup({ onSave, onCancel, initialBoard }: Props) {
   const [scopeToUser, setScopeToUser] = useState(true);
   const isEditing = !!initialBoard;
 
+  const [userOrgs, setUserOrgs] = useState<string[]>([]);
   const debouncedQuery = useDebounce(repoInput, 350);
   const searchAbortRef = useRef<AbortController | null>(null);
+
+  // Fetch user's organisations once on mount
+  useEffect(() => {
+    fetchUserOrgs()
+      .then(setUserOrgs)
+      .catch(() => setUserOrgs([]));
+  }, []);
 
   // Run search when debounced query changes
   useEffect(() => {
@@ -130,8 +138,9 @@ export function BoardSetup({ onSave, onCancel, initialBoard }: Props) {
 
     setSearching(true);
     const scopeLogin = scopeToUser ? state.currentUser?.login : undefined;
+    const scopeOrgs = scopeToUser ? userOrgs : undefined;
 
-    searchRepos(debouncedQuery, scopeLogin)
+    searchRepos(debouncedQuery, scopeLogin, scopeOrgs)
       .then((results) => {
         if (!controller.signal.aborted) {
           setSearchResults(results.filter((r) => !repos.includes(r)));
@@ -149,7 +158,7 @@ export function BoardSetup({ onSave, onCancel, initialBoard }: Props) {
       });
 
     return () => controller.abort();
-  }, [debouncedQuery, scopeToUser, state.currentUser?.login, repos]);
+  }, [debouncedQuery, scopeToUser, state.currentUser?.login, repos, userOrgs]);
 
   const addRepo = (repo: string) => {
     if (!repos.includes(repo)) {
