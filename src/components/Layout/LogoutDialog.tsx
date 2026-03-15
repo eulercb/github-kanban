@@ -1,5 +1,9 @@
+import { useState, useEffect } from 'react';
 import { useApp } from '../../contexts/AppContext';
 import { exportSettings } from '../../utils/export';
+import { saveConfigToGist } from '../../services/github';
+import { computeConfigHash, getGistSyncHash, setGistSyncHash } from '../../utils/storage';
+import type { ExportData } from '../../types';
 import styles from './LogoutDialog.module.css';
 
 interface Props {
@@ -8,7 +12,55 @@ interface Props {
 
 export function LogoutDialog({ onClose }: Props) {
   const { state, logout } = useApp();
+  const gistEnabled = !!state.gistId;
+  const [gistSyncFailed, setGistSyncFailed] = useState(false);
 
+  // If gist is enabled, sync (if needed) and sign out automatically
+  useEffect(() => {
+    if (!gistEnabled) return;
+
+    const currentHash = computeConfigHash(state.boards, state.settings);
+    const savedHash = getGistSyncHash();
+    const hasUnsyncedChanges = currentHash !== savedHash;
+
+    if (!hasUnsyncedChanges) {
+      logout();
+      onClose();
+      return;
+    }
+
+    const data: ExportData = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      boards: state.boards,
+      settings: state.settings,
+    };
+    saveConfigToGist(data, state.gistId).then(() => {
+      setGistSyncHash(currentHash);
+      logout();
+      onClose();
+    }).catch(() => {
+      setGistSyncFailed(true);
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Gist enabled and sync hasn't failed yet — show syncing indicator (or nothing briefly)
+  if (gistEnabled && !gistSyncFailed) {
+    return (
+      <div className={styles.overlay}>
+        <div className={styles.dialog}>
+          <div className={styles.header}>
+            <h3>Syncing to Gist...</h3>
+          </div>
+          <p className={styles.message}>
+            Backing up your configuration before signing out.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // No gist, or gist sync failed — show the normal confirmation dialog
   const handleExportAndLogout = () => {
     exportSettings(state);
     logout();
