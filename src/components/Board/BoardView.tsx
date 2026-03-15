@@ -26,6 +26,8 @@ export function BoardView() {
   const { state, updateBoard, addBoard, setActiveBoard } = useApp();
   const { isLoading, error } = useData();
   const [showNewBoard, setShowNewBoard] = useState(false);
+  const [editingBoard, setEditingBoard] = useState<BoardConfig | null>(null);
+  const [showBoardMenu, setShowBoardMenu] = useState(false);
 
   const activeBoard = state.boards.find((b) => b.id === state.activeBoardId);
 
@@ -72,6 +74,11 @@ export function BoardView() {
     setShowNewBoard(false);
   };
 
+  const handleEditBoard = (board: BoardConfig) => {
+    updateBoard(board);
+    setEditingBoard(null);
+  };
+
   if (state.boards.length === 0 || showNewBoard) {
     return (
       <div className={styles.setupContainer}>
@@ -80,6 +87,18 @@ export function BoardView() {
           onCancel={
             state.boards.length > 0 ? () => setShowNewBoard(false) : undefined
           }
+        />
+      </div>
+    );
+  }
+
+  if (editingBoard) {
+    return (
+      <div className={styles.setupContainer}>
+        <BoardSetup
+          initialBoard={editingBoard}
+          onSave={handleEditBoard}
+          onCancel={() => setEditingBoard(null)}
         />
       </div>
     );
@@ -116,7 +135,71 @@ export function BoardView() {
 
       <div className={styles.toolbar}>
         <div className={styles.toolbarLeft}>
-          <span className={styles.boardName}>{activeBoard.name}</span>
+          <div className={styles.boardSelector}>
+            <button
+              className={styles.boardSelectorBtn}
+              onClick={() => setShowBoardMenu(!showBoardMenu)}
+            >
+              <span className={styles.boardName}>{activeBoard.name}</span>
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M12.78 5.22a.749.749 0 0 1 0 1.06l-4.25 4.25a.749.749 0 0 1-1.06 0L3.22 6.28a.749.749 0 1 1 1.06-1.06L8 8.939l3.72-3.719a.749.749 0 0 1 1.06 0Z" />
+              </svg>
+            </button>
+            {showBoardMenu && (
+              <>
+                <div
+                  className={styles.boardMenuBackdrop}
+                  onClick={() => setShowBoardMenu(false)}
+                />
+                <div className={styles.boardMenu}>
+                  <div className={styles.boardMenuSection}>
+                    {state.boards.map((board) => (
+                      <button
+                        key={board.id}
+                        className={`${styles.boardMenuItem} ${
+                          board.id === activeBoard.id ? styles.boardMenuItemActive : ''
+                        }`}
+                        onClick={() => {
+                          setActiveBoard(board.id);
+                          setShowBoardMenu(false);
+                        }}
+                      >
+                        <span>{board.name}</span>
+                        <span className={styles.boardMenuMeta}>
+                          {board.repos.length} repo{board.repos.length !== 1 ? 's' : ''}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                  <div className={styles.boardMenuDivider} />
+                  <button
+                    className={styles.boardMenuItem}
+                    onClick={() => {
+                      setShowBoardMenu(false);
+                      setEditingBoard(activeBoard);
+                    }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                      <path d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.081-.286.235-.547.445-.758l8.61-8.61Zm.176 4.823L9.75 4.81l-6.286 6.287a.253.253 0 0 0-.064.108l-.558 1.953 1.953-.558a.253.253 0 0 0 .108-.064Zm1.238-3.763a.25.25 0 0 0-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 0 0 0-.354Z" />
+                    </svg>
+                    Edit current board
+                  </button>
+                  <button
+                    className={styles.boardMenuItem}
+                    onClick={() => {
+                      setShowBoardMenu(false);
+                      setShowNewBoard(true);
+                    }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                      <path d="M7.75 2a.75.75 0 0 1 .75.75V7h4.25a.75.75 0 0 1 0 1.5H8.5v4.25a.75.75 0 0 1-1.5 0V8.5H2.75a.75.75 0 0 1 0-1.5H7V2.75A.75.75 0 0 1 7.75 2Z" />
+                    </svg>
+                    New board
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
           <span className={styles.repoCount}>
             {activeBoard.repos.length} repo{activeBoard.repos.length !== 1 ? 's' : ''}
           </span>
@@ -127,12 +210,6 @@ export function BoardView() {
               <path d="M7.75 2a.75.75 0 0 1 .75.75V7h4.25a.75.75 0 0 1 0 1.5H8.5v4.25a.75.75 0 0 1-1.5 0V8.5H2.75a.75.75 0 0 1 0-1.5H7V2.75A.75.75 0 0 1 7.75 2Z" />
             </svg>
             Add Column
-          </button>
-          <button
-            className={styles.newBoardBtn}
-            onClick={() => setShowNewBoard(true)}
-          >
-            New Board
           </button>
         </div>
       </div>

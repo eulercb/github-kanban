@@ -100,6 +100,7 @@ export function BoardSetup({ onSave, onCancel, initialBoard }: Props) {
   const [searchResults, setSearchResults] = useState<string[]>([]);
   const [searching, setSearching] = useState(false);
   const [selectedPreset, setSelectedPreset] = useState<number>(0);
+  const isEditing = !!initialBoard;
 
   const handleSearch = async (query: string) => {
     setRepoInput(query);
@@ -144,12 +145,18 @@ export function BoardSetup({ onSave, onCancel, initialBoard }: Props) {
     e.preventDefault();
     if (!name.trim() || repos.length === 0) return;
 
-    const preset = PRESET_COLUMNS[selectedPreset];
-    const columns: ColumnConfig[] = (preset?.columns ?? []).map((col) => ({
-      ...col,
-      id: generateId(),
-      filters: col.filters.map((f) => ({ ...f, id: generateId() })),
-    }));
+    let columns: ColumnConfig[];
+    if (isEditing) {
+      // Preserve existing columns when editing
+      columns = initialBoard.columns;
+    } else {
+      const preset = PRESET_COLUMNS[selectedPreset];
+      columns = (preset?.columns ?? []).map((col) => ({
+        ...col,
+        id: generateId(),
+        filters: col.filters.map((f) => ({ ...f, id: generateId() })),
+      }));
+    }
 
     onSave({
       id: initialBoard?.id ?? generateId(),
@@ -231,26 +238,28 @@ export function BoardSetup({ onSave, onCancel, initialBoard }: Props) {
         )}
       </div>
 
-      <div className={styles.field}>
-        <label className={styles.label}>Column Template</label>
-        <div className={styles.presets}>
-          {PRESET_COLUMNS.map((preset, i) => (
-            <button
-              key={preset.name}
-              type="button"
-              className={`${styles.preset} ${i === selectedPreset ? styles.presetActive : ''}`}
-              onClick={() => setSelectedPreset(i)}
-            >
-              <strong>{preset.name}</strong>
-              <span>
-                {preset.columns.length === 0
-                  ? 'Start empty'
-                  : `${preset.columns.length} columns`}
-              </span>
-            </button>
-          ))}
+      {!isEditing && (
+        <div className={styles.field}>
+          <label className={styles.label}>Column Template</label>
+          <div className={styles.presets}>
+            {PRESET_COLUMNS.map((preset, i) => (
+              <button
+                key={preset.name}
+                type="button"
+                className={`${styles.preset} ${i === selectedPreset ? styles.presetActive : ''}`}
+                onClick={() => setSelectedPreset(i)}
+              >
+                <strong>{preset.name}</strong>
+                <span>
+                  {preset.columns.length === 0
+                    ? 'Start empty'
+                    : `${preset.columns.length} columns`}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className={styles.actions}>
         {onCancel && (
