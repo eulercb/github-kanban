@@ -154,12 +154,31 @@ export interface BoardConfig {
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
+export interface CardDisplaySettings {
+  showLabels: boolean;
+  showAssignees: boolean;
+  showPrStatus: boolean;
+  showCommentCount: boolean;
+  showTimeAgo: boolean;
+  showDraftBadge: boolean;
+}
+
+export const DEFAULT_CARD_DISPLAY: CardDisplaySettings = {
+  showLabels: true,
+  showAssignees: true,
+  showPrStatus: true,
+  showCommentCount: true,
+  showTimeAgo: true,
+  showDraftBadge: true,
+};
+
 export interface AppSettings {
   theme: ThemeMode;
   autoRefreshEnabled: boolean;
   autoRefreshInterval: number; // minutes
   refreshOnFocus: boolean;
   compactCards: boolean;
+  cardDisplay: CardDisplaySettings;
 }
 
 export interface AppState {

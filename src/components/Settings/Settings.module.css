@@ -203,6 +203,35 @@
   color: var(--text-secondary);
 }
 
+.cardDisplayGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 16px;
+  margin-top: 6px;
+}
+
+.cardDisplayOption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 3px 0;
+}
+
+.cardDisplayOption input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--accent-primary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.cardDisplayOption:hover {
+  color: var(--text-primary);
+}
+
 .boardList {
   display: flex;
   flex-direction: column;

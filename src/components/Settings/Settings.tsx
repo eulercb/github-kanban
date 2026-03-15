@@ -10,7 +10,7 @@ import {
   findConfigGist,
   loadConfigFromGist,
 } from '../../services/github';
-import type { AppSettings, ExportData, ThemeMode, BoardConfig } from '../../types';
+import type { AppSettings, ExportData, ThemeMode, BoardConfig, CardDisplaySettings } from '../../types';
 import styles from './Settings.module.css';
 
 interface Props {
@@ -323,7 +323,7 @@ export function Settings({ onClose }: Props) {
               </div>
 
               <div className={styles.field}>
-                <label className={styles.label}>Compact cards</label>
+                <label className={styles.label}>Card display</label>
                 <div className={styles.toggleRow}>
                   <label className={styles.toggle}>
                     <input
@@ -339,10 +339,35 @@ export function Settings({ onClose }: Props) {
                     <span className={styles.toggleSlider} />
                   </label>
                   <span className={styles.toggleLabel}>
-                    {settings.compactCards
-                      ? 'Show minimal card info'
-                      : 'Show full card details'}
+                    Compact mode
                   </span>
+                </div>
+                <div className={styles.cardDisplayGrid}>
+                  {([
+                    ['showLabels', 'Labels'],
+                    ['showAssignees', 'Assignee avatars'],
+                    ['showPrStatus', 'PR status icons'],
+                    ['showCommentCount', 'Comment & reviewer count'],
+                    ['showTimeAgo', 'Time ago'],
+                    ['showDraftBadge', 'Draft badge'],
+                  ] as [keyof CardDisplaySettings, string][]).map(([key, label]) => (
+                    <label key={key} className={styles.cardDisplayOption}>
+                      <input
+                        type="checkbox"
+                        checked={settings.cardDisplay[key]}
+                        onChange={(e) =>
+                          setSettings({
+                            ...settings,
+                            cardDisplay: {
+                              ...settings.cardDisplay,
+                              [key]: e.target.checked,
+                            },
+                          })
+                        }
+                      />
+                      <span>{label}</span>
+                    </label>
+                  ))}
                 </div>
               </div>
 

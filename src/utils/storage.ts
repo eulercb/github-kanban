@@ -1,4 +1,5 @@
 import type { AppState, AppSettings, BoardConfig } from '../types';
+import { DEFAULT_CARD_DISPLAY } from '../types';
 
 const STORAGE_KEY = 'github-kanban';
 const TOKEN_KEY = 'github-kanban-token';
@@ -10,6 +11,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   autoRefreshInterval: 5,
   refreshOnFocus: true,
   compactCards: false,
+  cardDisplay: { ...DEFAULT_CARD_DISPLAY },
 };
 
 const DEFAULT_STATE: AppState = {
@@ -32,7 +34,11 @@ export function loadState(): AppState {
     return {
       ...DEFAULT_STATE,
       ...parsed,
-      settings: { ...DEFAULT_SETTINGS, ...parsed.settings },
+      settings: {
+        ...DEFAULT_SETTINGS,
+        ...parsed.settings,
+        cardDisplay: { ...DEFAULT_CARD_DISPLAY, ...parsed.settings?.cardDisplay },
+      },
       token,
     };
   } catch {
