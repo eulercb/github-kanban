@@ -25,6 +25,8 @@ export function Settings({ onClose }: Props) {
   const [editingBoard, setEditingBoard] = useState<string | null>(null);
   const [editBoardName, setEditBoardName] = useState('');
   const [importError, setImportError] = useState<string | null>(null);
+  const [importSuccess, setImportSuccess] = useState<string | null>(null);
+  const [pasteJson, setPasteJson] = useState('');
   const [showTokenInput, setShowTokenInput] = useState(false);
   const [newToken, setNewToken] = useState('');
   const [tokenValidating, setTokenValidating] = useState(false);
@@ -134,28 +136,32 @@ export function Settings({ onClose }: Props) {
     exportSettings(state);
   };
 
+  const applyImportData = (raw: string) => {
+    const data = JSON.parse(raw) as ExportData;
+    if (!data.version || !Array.isArray(data.boards)) {
+      throw new Error('Invalid configuration format');
+    }
+    for (const board of data.boards) {
+      updateBoard(board);
+    }
+    if (data.settings) {
+      updateSettings(data.settings);
+      setSettings(data.settings);
+    }
+    return data.boards.length;
+  };
+
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setImportError(null);
+    setImportSuccess(null);
     const reader = new FileReader();
     reader.onload = (ev) => {
       try {
-        const data = JSON.parse(ev.target?.result as string) as ExportData;
-        if (!data.version || !Array.isArray(data.boards)) {
-          throw new Error('Invalid export file format');
-        }
-        // Import boards
-        for (const board of data.boards) {
-          updateBoard(board);
-        }
-        if (data.settings) {
-          updateSettings(data.settings);
-          setSettings(data.settings);
-        }
-        setImportError(null);
-        alert(`Imported ${data.boards.length} board(s) successfully.`);
+        const count = applyImportData(ev.target?.result as string);
+        setImportSuccess(`Imported ${count} board(s) successfully.`);
       } catch (err) {
         setImportError(
           err instanceof Error ? err.message : 'Failed to import data'
@@ -163,6 +169,20 @@ export function Settings({ onClose }: Props) {
       }
     };
     reader.readAsText(file);
+  };
+
+  const handlePasteImport = () => {
+    setImportError(null);
+    setImportSuccess(null);
+    try {
+      const count = applyImportData(pasteJson);
+      setImportSuccess(`Imported ${count} board(s) successfully.`);
+      setPasteJson('');
+    } catch (err) {
+      setImportError(
+        err instanceof Error ? err.message : 'Failed to parse JSON'
+      );
+    }
   };
 
   const startEditBoard = (board: BoardConfig) => {
@@ -477,8 +497,33 @@ export function Settings({ onClose }: Props) {
                     className={styles.fileInput}
                   />
                 </label>
+              </div>
+
+              <div className={styles.field}>
+                <label className={styles.label}>Paste Configuration</label>
+                <p className={styles.hint}>
+                  Paste a JSON configuration below. You can get this from an
+                  export, or ask an AI assistant to generate one for you.
+                </p>
+                <textarea
+                  value={pasteJson}
+                  onChange={(e) => setPasteJson(e.target.value)}
+                  placeholder='{"version": 1, "boards": [...], ...}'
+                  className={styles.textarea}
+                  rows={5}
+                />
+                <button
+                  className={styles.actionBtn}
+                  onClick={handlePasteImport}
+                  disabled={!pasteJson.trim()}
+                >
+                  Import JSON
+                </button>
                 {importError && (
                   <div className={styles.error}>{importError}</div>
+                )}
+                {importSuccess && (
+                  <div className={styles.success}>{importSuccess}</div>
                 )}
               </div>
 
