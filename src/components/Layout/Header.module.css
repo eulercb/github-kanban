@@ -137,6 +137,7 @@
   color: var(--text-primary);
   font-size: 13px;
   text-align: left;
+  text-decoration: none;
   cursor: pointer;
 }
 
