@@ -12,9 +12,10 @@ interface Props {
   initialBoard?: BoardConfig;
 }
 
-const PRESET_COLUMNS: { name: string; columns: Omit<ColumnConfig, 'id'>[] }[] = [
+const PRESET_COLUMNS: { name: string; description: string; columns: Omit<ColumnConfig, 'id'>[] }[] = [
   {
     name: 'My Issues',
+    description: '3 columns',
     columns: [
       {
         title: 'Assigned to me',
@@ -53,6 +54,7 @@ const PRESET_COLUMNS: { name: string; columns: Omit<ColumnConfig, 'id'>[] }[] = 
   },
   {
     name: 'PR Review',
+    description: '3 columns',
     columns: [
       {
         title: 'My PRs',
@@ -91,9 +93,13 @@ const PRESET_COLUMNS: { name: string; columns: Omit<ColumnConfig, 'id'>[] }[] = 
   },
   {
     name: 'Empty Board',
+    description: 'Start empty',
     columns: [],
   },
 ];
+
+// Special index for the AI-generated option (not in PRESET_COLUMNS)
+const AI_PRESET_INDEX = -1;
 
 export function BoardSetup({ onSave, onCancel, initialBoard }: Props) {
   const { state } = useApp();
@@ -306,14 +312,55 @@ export function BoardSetup({ onSave, onCancel, initialBoard }: Props) {
                 onClick={() => setSelectedPreset(i)}
               >
                 <strong>{preset.name}</strong>
-                <span>
-                  {preset.columns.length === 0
-                    ? 'Start empty'
-                    : `${preset.columns.length} columns`}
-                </span>
+                <span>{preset.description}</span>
               </button>
             ))}
+            <button
+              type="button"
+              className={`${styles.preset} ${styles.presetAi} ${selectedPreset === AI_PRESET_INDEX ? styles.presetActive : ''}`}
+              onClick={() => setSelectedPreset(AI_PRESET_INDEX)}
+            >
+              <strong>AI-Generated</strong>
+              <span>Use an AI assistant</span>
+            </button>
           </div>
+        </div>
+      )}
+
+      {!isEditing && selectedPreset === AI_PRESET_INDEX && (
+        <div className={styles.aiGuide}>
+          <p className={styles.aiGuideIntro}>
+            Let an AI assistant design your board with custom columns and
+            filters tailored to your workflow.
+          </p>
+          <ol className={styles.aiGuideSteps}>
+            <li>
+              <strong>If using Claude Code in this repo</strong>, run the{' '}
+              <code>/generate-board</code> slash command and describe your
+              workflow.
+            </li>
+            <li>
+              <strong>With any AI assistant</strong>, ask it to generate a
+              GitHub Kanban Board JSON configuration. Describe the repos you
+              want to track and what columns you need (e.g., "my open PRs",
+              "PRs with failing CI", "issues assigned to me").
+            </li>
+            <li>
+              Copy the generated JSON, then go to{' '}
+              <strong>Settings &gt; Import / Export &gt; Paste Configuration</strong>{' '}
+              and paste it.
+            </li>
+          </ol>
+          <details className={styles.aiGuideDetails}>
+            <summary>Install the slash command globally</summary>
+            <p>
+              To use <code>/generate-board</code> from any project, copy the
+              command file to your user-level Claude Code config:
+            </p>
+            <code className={styles.aiGuideCode}>
+              cp .claude/commands/generate-board.md ~/.claude/commands/
+            </code>
+          </details>
         </div>
       )}
 
@@ -327,13 +374,15 @@ export function BoardSetup({ onSave, onCancel, initialBoard }: Props) {
             Cancel
           </button>
         )}
-        <button
-          type="submit"
-          className={styles.submitBtn}
-          disabled={!name.trim() || repos.length === 0}
-        >
-          {initialBoard ? 'Save Changes' : 'Create Board'}
-        </button>
+        {selectedPreset !== AI_PRESET_INDEX && (
+          <button
+            type="submit"
+            className={styles.submitBtn}
+            disabled={!name.trim() || repos.length === 0}
+          >
+            {initialBoard ? 'Save Changes' : 'Create Board'}
+          </button>
+        )}
       </div>
     </form>
   );

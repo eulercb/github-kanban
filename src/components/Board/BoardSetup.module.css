@@ -166,12 +166,12 @@
 }
 
 .presets {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
 
 .preset {
-  flex: 1;
   padding: 12px;
   border: 2px solid var(--border-default);
   border-radius: var(--radius-md);
@@ -200,6 +200,81 @@
 .presetActive {
   border-color: var(--accent-primary);
   background: color-mix(in srgb, var(--accent-primary) 5%, var(--bg-primary));
+}
+
+.presetAi strong {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-merged, #a371f7));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.aiGuide {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+}
+
+.aiGuideIntro {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.aiGuideSteps {
+  padding-left: 20px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.aiGuideSteps li {
+  margin-bottom: 8px;
+}
+
+.aiGuideSteps code {
+  background: var(--bg-tertiary);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+.aiGuideDetails {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.aiGuideDetails summary {
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.aiGuideDetails p {
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+.aiGuideDetails code {
+  background: var(--bg-tertiary);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+.aiGuideCode {
+  display: block;
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-family: monospace;
+  word-break: break-all;
 }
 
 .actions {
