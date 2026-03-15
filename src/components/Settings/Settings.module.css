@@ -129,6 +129,27 @@
   width: 160px;
 }
 
+.textarea {
+  padding: 8px 10px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-md);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-family: monospace;
+  outline: none;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.textarea:focus {
+  border-color: var(--input-focus-border);
+}
+
+.textarea::placeholder {
+  color: var(--input-placeholder, var(--text-tertiary));
+}
+
 .toggleRow {
   display: flex;
   align-items: center;
