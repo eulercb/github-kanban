@@ -25,6 +25,7 @@ type AppAction =
   | { type: 'SET_ACTIVE_BOARD'; boardId: string | null }
   | { type: 'SET_SETTINGS'; settings: AppSettings }
   | { type: 'SET_THEME'; theme: ThemeMode }
+  | { type: 'SET_GIST_ID'; gistId: string | null }
   | { type: 'LOAD_STATE'; state: AppState }
   | { type: 'LOGOUT' };
 
@@ -60,6 +61,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
       return { ...state, activeBoardId: action.boardId };
     case 'SET_SETTINGS':
       return { ...state, settings: action.settings };
+    case 'SET_GIST_ID':
+      return { ...state, gistId: action.gistId };
     case 'SET_THEME':
       return { ...state, settings: { ...state.settings, theme: action.theme } };
     case 'LOAD_STATE':
@@ -71,6 +74,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
         boards: [],
         activeBoardId: null,
         settings: DEFAULT_SETTINGS,
+        gistId: null,
       };
     default:
       return state;
@@ -87,6 +91,7 @@ interface AppContextValue {
   deleteBoard: (boardId: string) => void;
   setActiveBoard: (boardId: string | null) => void;
   updateSettings: (settings: AppSettings) => void;
+  setGistId: (gistId: string | null) => void;
   logout: () => void;
 }
 
@@ -129,6 +134,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'SET_SETTINGS', settings });
   }, []);
 
+  const setGistId = useCallback((gistId: string | null) => {
+    dispatch({ type: 'SET_GIST_ID', gistId });
+  }, []);
+
   const logout = useCallback(() => {
     saveToken(null);
     dispatch({ type: 'LOGOUT' });
@@ -146,6 +155,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         deleteBoard,
         setActiveBoard,
         updateSettings,
+        setGistId,
         logout,
       }}
     >

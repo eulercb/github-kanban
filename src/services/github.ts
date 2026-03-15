@@ -1,5 +1,5 @@
 import { Octokit } from 'octokit';
-import type { GitHubIssue, GitHubPullRequest, GitHubUser } from '../types';
+import type { GitHubIssue, GitHubPullRequest, GitHubUser, ExportData } from '../types';
 
 let octokitInstance: Octokit | null = null;
 
@@ -223,6 +223,72 @@ export async function searchRepos(
     sort: 'updated',
   });
   return data.items.map((item) => item.full_name);
+}
+
+const GIST_FILENAME = 'github-kanban-config.json';
+
+export async function checkGistScope(): Promise<boolean> {
+  const kit = getOctokit();
+  try {
+    await kit.rest.gists.list({ per_page: 1 });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function findConfigGist(): Promise<{ id: string; data: ExportData } | null> {
+  const kit = getOctokit();
+  const iterator = kit.paginate.iterator(kit.rest.gists.list, {
+    per_page: 100,
+  });
+
+  for await (const { data: gists } of iterator) {
+    for (const gist of gists) {
+      if (gist.files && GIST_FILENAME in gist.files) {
+        const { data: full } = await kit.rest.gists.get({ gist_id: gist.id });
+        const file = full.files?.[GIST_FILENAME];
+        if (file?.content) {
+          return { id: gist.id, data: JSON.parse(file.content) as ExportData };
+        }
+      }
+    }
+  }
+  return null;
+}
+
+export async function saveConfigToGist(
+  data: ExportData,
+  existingGistId?: string | null,
+): Promise<string> {
+  const kit = getOctokit();
+  const files = { [GIST_FILENAME]: { content: JSON.stringify(data, null, 2) } };
+
+  if (existingGistId) {
+    try {
+      await kit.rest.gists.update({ gist_id: existingGistId, files });
+      return existingGistId;
+    } catch {
+      // Gist may have been deleted — fall through to create
+    }
+  }
+
+  const { data: created } = await kit.rest.gists.create({
+    description: 'GitHub Kanban Board — configuration backup',
+    public: false,
+    files,
+  });
+  return created.id!;
+}
+
+export async function loadConfigFromGist(gistId: string): Promise<ExportData> {
+  const kit = getOctokit();
+  const { data } = await kit.rest.gists.get({ gist_id: gistId });
+  const file = data.files?.[GIST_FILENAME];
+  if (!file?.content) {
+    throw new Error('Gist does not contain a valid configuration file');
+  }
+  return JSON.parse(file.content) as ExportData;
 }
 
 export async function getUserRepos(): Promise<string[]> {
