@@ -34,17 +34,11 @@ export function Header() {
         </div>
 
         <div className={styles.right}>
-          {lastRefresh && (
-            <span className={styles.lastRefresh}>
-              Updated {formatLastRefresh()}
-            </span>
-          )}
-
           <button
             className={styles.iconButton}
             onClick={() => refresh()}
             disabled={isLoading}
-            title="Refresh data"
+            title={lastRefresh ? `Last updated ${formatLastRefresh()}` : 'Refresh data'}
           >
             <svg
               width="16"
