@@ -89,6 +89,15 @@ export function Header() {
                     >
                       Settings
                     </button>
+                    <a
+                      className={styles.menuItem}
+                      href="https://github.com/eulercb/github-kanban/issues/new"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setShowUserMenu(false)}
+                    >
+                      Send feedback
+                    </a>
                     <div className={styles.menuDivider} />
                     <button
                       className={styles.menuItem}
