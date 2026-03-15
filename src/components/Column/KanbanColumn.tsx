@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { ColumnConfig, FilterRule, FilterCombination } from '../../types';
@@ -14,15 +14,33 @@ interface Props {
   boardId: string;
   showFilters: boolean;
   onToggleFilters: (columnId: string) => void;
+  autoEdit?: boolean;
+  onAutoEditDone?: () => void;
 }
 
-export function KanbanColumn({ column, boardId, showFilters, onToggleFilters }: Props) {
+export function KanbanColumn({
+  column,
+  boardId,
+  showFilters,
+  onToggleFilters,
+  autoEdit,
+  onAutoEditDone,
+}: Props) {
   const { state, updateBoard } = useApp();
   const { entities } = useData();
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(column.title);
 
   const board = state.boards.find((b) => b.id === boardId)!;
+
+  // Auto-edit when a new column is created
+  useEffect(() => {
+    if (autoEdit) {
+      setEditTitle(column.title);
+      setIsEditing(true);
+      onAutoEditDone?.();
+    }
+  }, [autoEdit]);
 
   const {
     attributes,
@@ -65,6 +83,7 @@ export function KanbanColumn({ column, boardId, showFilters, onToggleFilters }: 
   };
 
   const handleDelete = () => {
+    if (!confirm(`Delete column "${column.title}"?`)) return;
     const newColumns = board.columns.filter((c) => c.id !== column.id);
     updateBoard({ ...board, columns: newColumns });
   };
@@ -97,6 +116,7 @@ export function KanbanColumn({ column, boardId, showFilters, onToggleFilters }: 
               }}
               className={styles.titleInput}
               onClick={(e) => e.stopPropagation()}
+              onFocus={(e) => e.target.select()}
             />
           ) : (
             <h3
@@ -113,6 +133,7 @@ export function KanbanColumn({ column, boardId, showFilters, onToggleFilters }: 
         <div className={styles.headerActions}>
           <button
             className={`${styles.actionBtn} ${showFilters ? styles.actionActive : ''}`}
+            data-filter-btn
             onClick={(e) => {
               e.stopPropagation();
               onToggleFilters(column.id);
@@ -139,7 +160,7 @@ export function KanbanColumn({ column, boardId, showFilters, onToggleFilters }: 
       </div>
 
       {showFilters && (
-        <div className={styles.filterPanel}>
+        <div className={styles.filterPanel} data-filter-panel>
           <FilterEditor
             filters={column.filters}
             combination={column.filterCombination}
