@@ -52,6 +52,9 @@ function matchesRule(entity: GitHubEntity, rule: FilterRule): boolean {
     case 'repo':
       fieldValue = getEntityRepo(entity).toLowerCase();
       break;
+    case 'org':
+      fieldValue = getEntityRepo(entity).split('/')[0].toLowerCase();
+      break;
     case 'draft':
       if (isPullRequest(entity)) {
         fieldValue = entity.draft ? 'true' : 'false';

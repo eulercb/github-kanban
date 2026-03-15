@@ -11,6 +11,7 @@ const FIELD_OPTIONS: { value: FilterField; label: string }[] = [
   { value: 'label', label: 'Label' },
   { value: 'milestone', label: 'Milestone' },
   { value: 'repo', label: 'Repository' },
+  { value: 'org', label: 'Organisation' },
   { value: 'draft', label: 'Draft' },
   { value: 'review_status', label: 'Review Status' },
   { value: 'ci_status', label: 'CI Status' },
