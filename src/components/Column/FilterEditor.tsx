@@ -13,6 +13,9 @@ const FIELD_OPTIONS: { value: FilterField; label: string }[] = [
   { value: 'repo', label: 'Repository' },
   { value: 'draft', label: 'Draft' },
   { value: 'review_status', label: 'Review Status' },
+  { value: 'ci_status', label: 'CI Status' },
+  { value: 'has_unresolved_comments', label: 'Unresolved Comments' },
+  { value: 'has_unviewed_files', label: 'Unviewed Files' },
   { value: 'title', label: 'Title' },
   { value: 'has_pull_request', label: 'Has PR' },
 ];
@@ -28,7 +31,10 @@ const VALUE_SUGGESTIONS: Partial<Record<FilterField, string[]>> = {
   type: ['issue', 'pull_request'],
   state: ['open', 'closed', 'merged'],
   draft: ['true', 'false'],
-  review_status: ['pending', 'none'],
+  review_status: ['approved', 'changes_requested', 'review_required', 'none'],
+  ci_status: ['success', 'failure', 'pending', 'none'],
+  has_unresolved_comments: ['true', 'false'],
+  has_unviewed_files: ['true', 'false'],
   has_pull_request: ['true', 'false'],
 };
 
