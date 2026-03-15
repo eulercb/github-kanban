@@ -224,26 +224,40 @@
   line-height: 1.5;
 }
 
-.aiGuideSteps {
-  padding-left: 20px;
+.aiGuideSection {
+  margin-bottom: 14px;
   font-size: 13px;
   color: var(--text-secondary);
-  line-height: 1.6;
+  line-height: 1.5;
 }
 
-.aiGuideSteps li {
-  margin-bottom: 8px;
-}
-
-.aiGuideSteps code {
+.aiGuideSection code {
   background: var(--bg-tertiary);
   padding: 1px 6px;
   border-radius: 3px;
   font-size: 12px;
 }
 
+.aiGuideSection p {
+  margin-top: 4px;
+}
+
+.aiGuideSectionTitle {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.aiGuideAlt {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
 .aiGuideDetails {
-  margin-top: 12px;
+  margin-top: 4px;
   font-size: 12px;
   color: var(--text-tertiary);
 }
