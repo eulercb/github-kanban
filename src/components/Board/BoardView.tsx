@@ -88,6 +88,29 @@ export function BoardView() {
     });
   };
 
+  const duplicateColumn = (columnId: string) => {
+    if (!activeBoard) return;
+    const source = activeBoard.columns.find((c) => c.id === columnId);
+    if (!source) return;
+    const newId = generateId();
+    const newColumn: ColumnConfig = {
+      ...source,
+      id: newId,
+      title: `${source.title} (copy)`,
+    };
+    const idx = activeBoard.columns.findIndex((c) => c.id === columnId);
+    const newColumns = [...activeBoard.columns];
+    newColumns.splice(idx + 1, 0, newColumn);
+    updateBoard({ ...activeBoard, columns: newColumns });
+    setEditingColumnId(newId);
+    requestAnimationFrame(() => {
+      boardRef.current?.scrollTo({
+        left: boardRef.current.scrollWidth,
+        behavior: 'smooth',
+      });
+    });
+  };
+
   const handleBoardClick = useCallback(
     (e: React.MouseEvent) => {
       // Close filter panel when clicking on the board background or a different column
@@ -268,6 +291,7 @@ export function BoardView() {
                 onToggleFilters={(id) =>
                   setOpenFilterColumnId((prev) => (prev === id ? null : id))
                 }
+                onDuplicate={duplicateColumn}
                 autoEdit={editingColumnId === column.id}
                 onAutoEditDone={() => setEditingColumnId(null)}
               />
