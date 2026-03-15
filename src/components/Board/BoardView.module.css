@@ -28,10 +28,93 @@
   gap: 8px;
 }
 
+.boardSelector {
+  position: relative;
+}
+
+.boardSelectorBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: none;
+  cursor: pointer;
+  transition: all var(--transition-speed);
+  color: var(--text-secondary);
+}
+
+.boardSelectorBtn:hover {
+  background: var(--bg-secondary);
+  border-color: var(--border-default);
+}
+
 .boardName {
   font-weight: 600;
   font-size: 14px;
   color: var(--text-primary);
+}
+
+.boardMenuBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 19;
+}
+
+.boardMenu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 240px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  z-index: 20;
+  overflow: hidden;
+  padding: 4px 0;
+}
+
+.boardMenuSection {
+  padding: 0;
+}
+
+.boardMenuDivider {
+  height: 1px;
+  background: var(--border-default);
+  margin: 4px 0;
+}
+
+.boardMenuItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: none;
+  color: var(--text-primary);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-speed);
+}
+
+.boardMenuItem:hover {
+  background: var(--bg-secondary);
+}
+
+.boardMenuItemActive {
+  font-weight: 600;
+  background: var(--bg-secondary);
+}
+
+.boardMenuMeta {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-weight: 400;
 }
 
 .repoCount {
@@ -60,22 +143,6 @@
 
 .addColumnBtn:hover {
   background: var(--bg-secondary);
-}
-
-.newBoardBtn {
-  padding: 6px 12px;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  background: var(--bg-primary);
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 500;
-  transition: all var(--transition-speed);
-}
-
-.newBoardBtn:hover {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
 }
 
 .board {
