@@ -37,11 +37,6 @@
   font-size: 15px;
 }
 
-.lastRefresh {
-  font-size: 12px;
-  color: var(--text-tertiary);
-  white-space: nowrap;
-}
 
 .iconButton {
   display: flex;
