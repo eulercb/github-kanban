@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -29,6 +29,8 @@ export function BoardView() {
   const [editingBoard, setEditingBoard] = useState<BoardConfig | null>(null);
   const [showBoardMenu, setShowBoardMenu] = useState(false);
   const [openFilterColumnId, setOpenFilterColumnId] = useState<string | null>(null);
+  const [editingColumnId, setEditingColumnId] = useState<string | null>(null);
+  const boardRef = useRef<HTMLDivElement>(null);
 
   const activeBoard = state.boards.find((b) => b.id === state.activeBoardId);
 
@@ -55,8 +57,9 @@ export function BoardView() {
 
   const addColumn = () => {
     if (!activeBoard) return;
+    const newId = generateId();
     const newColumn: ColumnConfig = {
-      id: generateId(),
+      id: newId,
       title: 'New Column',
       filters: [],
       filterCombination: 'and',
@@ -67,7 +70,31 @@ export function BoardView() {
       ...activeBoard,
       columns: [...activeBoard.columns, newColumn],
     });
+    setOpenFilterColumnId(null);
+    setEditingColumnId(newId);
+    // Scroll to the new column after render
+    requestAnimationFrame(() => {
+      boardRef.current?.scrollTo({
+        left: boardRef.current.scrollWidth,
+        behavior: 'smooth',
+      });
+    });
   };
+
+  const handleBoardClick = useCallback(
+    (e: React.MouseEvent) => {
+      // Close filter panel when clicking on the board background or a different column
+      if (openFilterColumnId) {
+        const target = e.target as HTMLElement;
+        const filterPanel = target.closest('[data-filter-panel]');
+        const filterBtn = target.closest('[data-filter-btn]');
+        if (!filterPanel && !filterBtn) {
+          setOpenFilterColumnId(null);
+        }
+      }
+    },
+    [openFilterColumnId]
+  );
 
   const handleCreateBoard = (board: BoardConfig) => {
     addBoard(board);
@@ -215,7 +242,7 @@ export function BoardView() {
         </div>
       </div>
 
-      <div className={styles.board}>
+      <div className={styles.board} ref={boardRef} onClick={handleBoardClick}>
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -234,6 +261,8 @@ export function BoardView() {
                 onToggleFilters={(id) =>
                   setOpenFilterColumnId((prev) => (prev === id ? null : id))
                 }
+                autoEdit={editingColumnId === column.id}
+                onAutoEditDone={() => setEditingColumnId(null)}
               />
             ))}
           </SortableContext>
