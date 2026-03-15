@@ -3,6 +3,7 @@ import type {
   FilterRule,
   FilterCombination,
   ColumnConfig,
+  SortConfig,
 } from '../types';
 import { isPullRequest } from '../types';
 
@@ -146,9 +147,48 @@ export function filterEntities(
   });
 }
 
+function getSortValue(entity: GitHubEntity, field: SortConfig['field']): string | number {
+  switch (field) {
+    case 'updated':
+      return new Date(entity.updated_at).getTime();
+    case 'created':
+      return new Date(entity.created_at).getTime();
+    case 'comments':
+      return entity.comments + (isPullRequest(entity) ? entity.review_comments : 0);
+    case 'title':
+      return entity.title.toLowerCase();
+    case 'author':
+      return entity.user.login.toLowerCase();
+    default:
+      return 0;
+  }
+}
+
+export function sortEntities(
+  entities: GitHubEntity[],
+  sort: SortConfig
+): GitHubEntity[] {
+  const sorted = [...entities];
+  const dir = sort.direction === 'asc' ? 1 : -1;
+
+  sorted.sort((a, b) => {
+    const va = getSortValue(a, sort.field);
+    const vb = getSortValue(b, sort.field);
+    if (va < vb) return -1 * dir;
+    if (va > vb) return 1 * dir;
+    return 0;
+  });
+
+  return sorted;
+}
+
 export function getColumnEntities(
   allEntities: GitHubEntity[],
   column: ColumnConfig
 ): GitHubEntity[] {
-  return filterEntities(allEntities, column.filters, column.filterCombination);
+  const filtered = filterEntities(allEntities, column.filters, column.filterCombination);
+  if (column.sortBy) {
+    return sortEntities(filtered, column.sortBy);
+  }
+  return filtered;
 }
