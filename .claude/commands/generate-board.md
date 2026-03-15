@@ -31,7 +31,8 @@ Produce a JSON object matching the `ExportData` schema. The user will copy the e
           ],
           "filterCombination": "and",
           "collapsed": false,
-          "width": 340
+          "width": 340,
+          "sortBy": { "field": "<SortField>", "direction": "desc" }
         }
       ]
     }
@@ -77,6 +78,18 @@ Every `id` field must be a unique UUID v4 string (e.g., `"a1b2c3d4-e5f6-4a7b-8c9
 | `is_not` | Does not match |
 | `contains` | Contains substring |
 | `not_contains` | Does not contain substring |
+
+## Sort Fields (optional `sortBy`)
+
+| Field | Description |
+|---|---|
+| `updated` | Sort by last updated date |
+| `created` | Sort by creation date |
+| `comments` | Sort by comment count (includes review comments for PRs) |
+| `title` | Sort alphabetically by title |
+| `author` | Sort alphabetically by author login |
+
+Direction is `"desc"` (newest/most first) or `"asc"` (oldest/least first). Omit `sortBy` entirely to use the default order (most recently updated first).
 
 ## Filter Combination
 

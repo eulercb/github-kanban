@@ -115,6 +115,22 @@ export interface FilterRule {
 
 export type FilterCombination = 'and' | 'or';
 
+// Sort types
+
+export type SortField =
+  | 'updated'
+  | 'created'
+  | 'comments'
+  | 'title'
+  | 'author';
+
+export type SortDirection = 'asc' | 'desc';
+
+export interface SortConfig {
+  field: SortField;
+  direction: SortDirection;
+}
+
 // Board/Column types
 
 export interface ColumnConfig {
@@ -124,6 +140,7 @@ export interface ColumnConfig {
   filterCombination: FilterCombination;
   collapsed: boolean;
   width: number; // px
+  sortBy?: SortConfig;
 }
 
 export interface BoardConfig {

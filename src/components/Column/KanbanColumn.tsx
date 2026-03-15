@@ -1,13 +1,21 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import type { ColumnConfig, FilterRule, FilterCombination } from '../../types';
+import type { ColumnConfig, FilterRule, FilterCombination, SortConfig, SortField } from '../../types';
 import { useApp } from '../../contexts/AppContext';
 import { useData } from '../../contexts/DataContext';
 import { getColumnEntities } from '../../services/filters';
 import { EntityCard } from '../Card/EntityCard';
 import { FilterEditor } from './FilterEditor';
 import styles from './KanbanColumn.module.css';
+
+const SORT_OPTIONS: { field: SortField; label: string }[] = [
+  { field: 'updated', label: 'Updated' },
+  { field: 'created', label: 'Created' },
+  { field: 'comments', label: 'Comments' },
+  { field: 'title', label: 'Title' },
+  { field: 'author', label: 'Author' },
+];
 
 interface Props {
   column: ColumnConfig;
@@ -33,6 +41,8 @@ export function KanbanColumn({
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(column.title);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const [showSortMenu, setShowSortMenu] = useState(false);
+  const sortMenuRef = useRef<HTMLDivElement>(null);
 
   const board = state.boards.find((b) => b.id === boardId)!;
 
@@ -98,6 +108,35 @@ export function KanbanColumn({
   const handleCombinationChange = (filterCombination: FilterCombination) => {
     updateColumn({ filterCombination });
   };
+
+  const handleSortChange = (field: SortField) => {
+    const current = column.sortBy;
+    let newSort: SortConfig | undefined;
+    if (current?.field === field) {
+      if (current.direction === 'desc') {
+        newSort = { field, direction: 'asc' };
+      } else {
+        // Already asc → clear sort
+        newSort = undefined;
+      }
+    } else {
+      newSort = { field, direction: 'desc' };
+    }
+    updateColumn({ sortBy: newSort });
+    setShowSortMenu(false);
+  };
+
+  // Close sort menu on outside click
+  useEffect(() => {
+    if (!showSortMenu) return;
+    const handle = (e: MouseEvent) => {
+      if (sortMenuRef.current && !sortMenuRef.current.contains(e.target as Node)) {
+        setShowSortMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handle);
+    return () => document.removeEventListener('mousedown', handle);
+  }, [showSortMenu]);
 
   const handleContextMenu = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -202,6 +241,60 @@ export function KanbanColumn({
               <path d="M.75 3h14.5a.75.75 0 0 1 0 1.5H.75a.75.75 0 0 1 0-1.5ZM3 7.75A.75.75 0 0 1 3.75 7h8.5a.75.75 0 0 1 0 1.5h-8.5A.75.75 0 0 1 3 7.75Zm3 4a.75.75 0 0 1 .75-.75h2.5a.75.75 0 0 1 0 1.5h-2.5a.75.75 0 0 1-.75-.75Z" />
             </svg>
           </button>
+          <div className={styles.sortWrapper} ref={sortMenuRef}>
+            <button
+              className={`${styles.actionBtn} ${column.sortBy ? styles.actionActive : ''}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowSortMenu(!showSortMenu);
+              }}
+              title="Sort cards"
+            >
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M0 1.75C0 .784.784 0 1.75 0h12.5C15.216 0 16 .784 16 1.75v2c0 .698-.409 1.3-1 1.582v5.918A2.75 2.75 0 0 1 12.25 14h-1.293l.78.78a.749.749 0 1 1-1.06 1.06l-2.06-2.06a.749.749 0 0 1 0-1.06l2.06-2.06a.749.749 0 1 1 1.06 1.06l-.78.78h1.293c.69 0 1.25-.56 1.25-1.25V5.5h-5v5.75a.75.75 0 0 1-1.5 0V5.5h-5v5.75A1.25 1.25 0 0 0 3.75 12.5h1.293l-.78-.78a.749.749 0 1 1 1.06-1.06l2.06 2.06a.749.749 0 0 1 0 1.06l-2.06 2.06a.749.749 0 1 1-1.06-1.06l.78-.78H3.75A2.75 2.75 0 0 1 1 11.25V5.332A1.75 1.75 0 0 1 0 3.75Zm1.75-.25a.25.25 0 0 0-.25.25v2c0 .138.112.25.25.25h12.5a.25.25 0 0 0 .25-.25v-2a.25.25 0 0 0-.25-.25Z" />
+              </svg>
+            </button>
+            {showSortMenu && (
+              <div className={styles.sortMenu}>
+                {SORT_OPTIONS.map((opt) => {
+                  const isActive = column.sortBy?.field === opt.field;
+                  const dir = isActive ? column.sortBy!.direction : null;
+                  return (
+                    <button
+                      key={opt.field}
+                      className={`${styles.sortMenuItem} ${isActive ? styles.sortMenuItemActive : ''}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSortChange(opt.field);
+                      }}
+                    >
+                      <span>{opt.label}</span>
+                      {isActive && (
+                        <span className={styles.sortDir}>
+                          {dir === 'desc' ? '↓' : '↑'}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+                {column.sortBy && (
+                  <>
+                    <div className={styles.sortDivider} />
+                    <button
+                      className={styles.sortMenuItem}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        updateColumn({ sortBy: undefined });
+                        setShowSortMenu(false);
+                      }}
+                    >
+                      Clear sort
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
           <button
             className={styles.actionBtn}
             onClick={(e) => {

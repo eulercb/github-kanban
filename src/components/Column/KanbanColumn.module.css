@@ -109,6 +109,61 @@
   color: var(--accent-primary);
 }
 
+/* Sort dropdown */
+
+.sortWrapper {
+  position: relative;
+}
+
+.sortMenu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 50;
+  min-width: 140px;
+  padding: 4px 0;
+  margin-top: 4px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.sortMenuItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 6px 12px;
+  border: none;
+  background: none;
+  color: var(--text-primary);
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-speed);
+}
+
+.sortMenuItem:hover {
+  background: var(--bg-secondary);
+}
+
+.sortMenuItemActive {
+  color: var(--accent-primary);
+  font-weight: 600;
+}
+
+.sortDir {
+  font-size: 11px;
+  margin-left: 6px;
+}
+
+.sortDivider {
+  height: 1px;
+  margin: 4px 0;
+  background: var(--border-default);
+}
+
 .filterPanel {
   padding: 10px 12px;
   border-top: 1px solid var(--border-subtle);
