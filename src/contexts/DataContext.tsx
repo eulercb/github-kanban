@@ -67,6 +67,18 @@ export function DataProvider({ children }: { children: ReactNode }) {
       });
   }, [state.gistId, state.boards, state.settings]);
 
+  const flattenAndSort = useCallback((repoData: Map<string, { issues: GitHubEntity[]; pullRequests: GitHubEntity[] }>) => {
+    const all: GitHubEntity[] = [];
+    for (const [, data] of repoData) {
+      all.push(...data.issues, ...data.pullRequests);
+    }
+    all.sort(
+      (a, b) =>
+        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+    );
+    return all;
+  }, []);
+
   const refresh = useCallback(async () => {
     if (!state.token || repos.length === 0 || isRefreshingRef.current) return;
 
@@ -75,21 +87,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setError(null);
 
     try {
-      const repoData = await fetchAllRepoData(repos);
-      const allEntities: GitHubEntity[] = [];
+      const repoData = await fetchAllRepoData(repos, (partial) => {
+        setEntities(flattenAndSort(partial));
+      });
 
-      for (const [, data] of repoData) {
-        allEntities.push(...(data.issues as GitHubEntity[]));
-        allEntities.push(...(data.pullRequests as GitHubEntity[]));
-      }
-
-      // Sort by updated_at descending
-      allEntities.sort(
-        (a, b) =>
-          new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
-      );
-
-      setEntities(allEntities);
+      setEntities(flattenAndSort(repoData));
       setLastRefresh(new Date());
       syncGistIfNeeded();
     } catch (err) {
@@ -98,7 +100,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
       isRefreshingRef.current = false;
     }
-  }, [state.token, reposKey, syncGistIfNeeded]);
+  }, [state.token, reposKey, syncGistIfNeeded, flattenAndSort]);
 
   // Initial fetch when repos change
   useEffect(() => {
