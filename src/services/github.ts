@@ -340,12 +340,30 @@ export async function fetchAllRepoData(
   return result;
 }
 
+export async function fetchUserOrgs(): Promise<string[]> {
+  const kit = getOctokit();
+  const { data } = await kit.rest.orgs.listForAuthenticatedUser({
+    per_page: 100,
+  });
+  return data.map((org) => org.login);
+}
+
 export async function searchRepos(
   query: string,
-  scopeUser?: string
+  scopeUser?: string,
+  scopeOrgs?: string[]
 ): Promise<string[]> {
   const kit = getOctokit();
-  const q = scopeUser ? `${query} user:${scopeUser}` : query;
+  let q = query;
+  if (scopeUser) {
+    const qualifiers = [`user:${scopeUser}`];
+    if (scopeOrgs) {
+      for (const org of scopeOrgs) {
+        qualifiers.push(`org:${org}`);
+      }
+    }
+    q = `${query} ${qualifiers.join(' ')}`;
+  }
   const { data } = await kit.rest.search.repos({
     q,
     per_page: 15,
