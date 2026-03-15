@@ -354,10 +354,6 @@ export function BoardSetup({ onSave, onCancel, initialBoard }: Props) {
             <code className={styles.aiGuideCode}>
               /github-kanban:generate-board pr-review for my-org/api and my-org/web
             </code>
-            <p className={styles.aiGuideAlt}>
-              Or if you're working inside this repo, you can use{' '}
-              <code>/generate-board</code> directly.
-            </p>
           </div>
 
           <div className={styles.aiGuideSection}>
