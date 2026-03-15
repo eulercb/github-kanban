@@ -72,6 +72,10 @@ function StateIcon({ entity }: { entity: GitHubEntity }) {
   );
 }
 
+export function entityKey(entity: GitHubEntity): string {
+  return `${entity.id}-${entity.html_url}`;
+}
+
 export function EntityCard({ entity }: Props) {
   const { state } = useApp();
   const compact = state.settings.compactCards;
@@ -84,6 +88,7 @@ export function EntityCard({ entity }: Props) {
       target="_blank"
       rel="noopener noreferrer"
       className={`${styles.card} ${compact ? styles.compact : ''}`}
+      data-entity-key={entityKey(entity)}
     >
       <div className={styles.header}>
         <StateIcon entity={entity} />

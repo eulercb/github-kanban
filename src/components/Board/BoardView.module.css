@@ -235,3 +235,7 @@
 .createBtn:hover {
   opacity: 0.9;
 }
+
+.exitingCard {
+  pointer-events: none;
+}

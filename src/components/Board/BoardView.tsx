@@ -16,7 +16,9 @@ import {
 } from '@dnd-kit/sortable';
 import { useApp } from '../../contexts/AppContext';
 import { useData } from '../../contexts/DataContext';
+import { useCardAnimations } from '../../hooks/useCardAnimations';
 import { KanbanColumn } from '../Column/KanbanColumn';
+import { EntityCard, entityKey } from '../Card/EntityCard';
 import { BoardSetup } from './BoardSetup';
 import { generateId } from '../../utils/id';
 import type { ColumnConfig, BoardConfig } from '../../types';
@@ -24,13 +26,18 @@ import styles from './BoardView.module.css';
 
 export function BoardView() {
   const { state, updateBoard, addBoard, setActiveBoard } = useApp();
-  const { isLoading, error } = useData();
+  const { entities, isLoading, error } = useData();
   const [showNewBoard, setShowNewBoard] = useState(false);
   const [editingBoard, setEditingBoard] = useState<BoardConfig | null>(null);
   const [showBoardMenu, setShowBoardMenu] = useState(false);
   const [openFilterColumnId, setOpenFilterColumnId] = useState<string | null>(null);
   const [editingColumnId, setEditingColumnId] = useState<string | null>(null);
   const boardRef = useRef<HTMLDivElement>(null);
+  const { exitingCards, dismissExitingCard } = useCardAnimations(
+    boardRef,
+    entities,
+    entityKey
+  );
 
   const activeBoard = state.boards.find((b) => b.id === state.activeBoardId);
 
@@ -278,6 +285,23 @@ export function BoardView() {
           </div>
         )}
       </div>
+
+      {exitingCards.map(({ key, entity, rect }) => (
+        <div
+          key={`exit-${key}`}
+          className={`card-exit ${styles.exitingCard}`}
+          style={{
+            position: 'fixed',
+            left: rect.left,
+            top: rect.top,
+            width: rect.width,
+            zIndex: 50,
+          }}
+          onAnimationEnd={() => dismissExitingCard(key)}
+        >
+          <EntityCard entity={entity} />
+        </div>
+      ))}
     </div>
   );
 }
