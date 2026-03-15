@@ -5,7 +5,7 @@ import { Settings } from '../Settings/Settings';
 import styles from './Header.module.css';
 
 export function Header() {
-  const { state, setActiveBoard, logout } = useApp();
+  const { state, logout } = useApp();
   const { isLoading, lastRefresh, refresh } = useData();
   const [showSettings, setShowSettings] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -29,21 +29,6 @@ export function Header() {
             <span className={styles.appName}>Kanban</span>
           </div>
 
-          {state.boards.length > 0 && (
-            <div className={styles.boardTabs}>
-              {state.boards.map((board) => (
-                <button
-                  key={board.id}
-                  className={`${styles.boardTab} ${
-                    board.id === state.activeBoardId ? styles.active : ''
-                  }`}
-                  onClick={() => setActiveBoard(board.id)}
-                >
-                  {board.name}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
 
         <div className={styles.right}>
