@@ -167,3 +167,36 @@
   font-size: 11px;
   color: var(--text-tertiary);
 }
+
+/* Card transition animations */
+
+@keyframes cardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes cardExit {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+:global(.card-enter) {
+  animation: cardEnter 0.25s ease-out both;
+}
+
+:global(.card-exit) {
+  animation: cardExit 0.25s ease-in both;
+  pointer-events: none;
+}
