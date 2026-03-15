@@ -3,7 +3,7 @@ import type { AppState, AppSettings, BoardConfig } from '../types';
 const STORAGE_KEY = 'github-kanban';
 const TOKEN_KEY = 'github-kanban-token';
 
-const DEFAULT_SETTINGS: AppSettings = {
+export const DEFAULT_SETTINGS: AppSettings = {
   theme: 'system',
   autoRefreshEnabled: true,
   autoRefreshInterval: 5,

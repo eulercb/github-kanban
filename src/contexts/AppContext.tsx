@@ -13,7 +13,7 @@ import type {
   GitHubUser,
   ThemeMode,
 } from '../types';
-import { loadState, saveState, saveToken } from '../utils/storage';
+import { loadState, saveState, saveToken, DEFAULT_SETTINGS } from '../utils/storage';
 
 type AppAction =
   | { type: 'SET_TOKEN'; token: string | null }
@@ -66,9 +66,11 @@ function appReducer(state: AppState, action: AppAction): AppState {
       return action.state;
     case 'LOGOUT':
       return {
-        ...state,
         token: null,
         currentUser: null,
+        boards: [],
+        activeBoardId: null,
+        settings: DEFAULT_SETTINGS,
       };
     default:
       return state;
