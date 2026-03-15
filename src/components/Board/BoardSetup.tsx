@@ -176,10 +176,15 @@ export function BoardSetup({ onSave, onCancel, initialBoard }: Props) {
       columns = initialBoard.columns;
     } else {
       const preset = PRESET_COLUMNS[selectedPreset];
+      const userLogin = state.currentUser?.login ?? '';
       columns = (preset?.columns ?? []).map((col) => ({
         ...col,
         id: generateId(),
-        filters: col.filters.map((f) => ({ ...f, id: generateId() })),
+        filters: col.filters.map((f) => ({
+          ...f,
+          id: generateId(),
+          value: f.value === '{{user}}' ? userLogin : f.value,
+        })),
       }));
     }
 

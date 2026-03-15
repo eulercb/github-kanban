@@ -41,8 +41,11 @@
   gap: 4px;
 }
 
-.select {
-  padding: 4px 6px;
+/* Shared base for all selects */
+.fieldSelect,
+.operatorSelect,
+.valueSelect {
+  padding: 5px 6px;
   border: 1px solid var(--input-border);
   border-radius: var(--radius-sm);
   background: var(--input-bg);
@@ -50,11 +53,29 @@
   font-size: 12px;
   outline: none;
   min-width: 0;
-  flex-shrink: 1;
 }
 
-.select:focus {
+.fieldSelect:focus,
+.operatorSelect:focus,
+.valueSelect:focus {
   border-color: var(--input-focus-border);
+}
+
+/* Field select — fixed width */
+.fieldSelect {
+  width: 90px;
+  flex-shrink: 0;
+}
+
+/* Operator select — fixed width */
+.operatorSelect {
+  width: 90px;
+  flex-shrink: 0;
+}
+
+/* Value select — fills remaining space */
+.valueSelect {
+  flex: 1;
 }
 
 .inputWrapper {
@@ -65,7 +86,7 @@
 
 .input {
   width: 100%;
-  padding: 4px 6px;
+  padding: 5px 6px;
   border: 1px solid var(--input-border);
   border-radius: var(--radius-sm);
   background: var(--input-bg);
