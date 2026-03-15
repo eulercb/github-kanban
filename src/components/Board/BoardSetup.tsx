@@ -333,33 +333,53 @@ export function BoardSetup({ onSave, onCancel, initialBoard }: Props) {
             Let an AI assistant design your board with custom columns and
             filters tailored to your workflow.
           </p>
-          <ol className={styles.aiGuideSteps}>
-            <li>
-              <strong>If using Claude Code in this repo</strong>, run the{' '}
-              <code>/generate-board</code> slash command and describe your
-              workflow.
-            </li>
-            <li>
-              <strong>With any AI assistant</strong>, ask it to generate a
-              GitHub Kanban Board JSON configuration. Describe the repos you
-              want to track and what columns you need (e.g., "my open PRs",
-              "PRs with failing CI", "issues assigned to me").
-            </li>
-            <li>
+
+          <div className={styles.aiGuideSection}>
+            <strong className={styles.aiGuideSectionTitle}>
+              Step 1 &mdash; Install the skill
+            </strong>
+            <p>Install the plugin in Claude Code to get the{' '}
+              <code>/github-kanban:generate-board</code> skill:
+            </p>
+            <code className={styles.aiGuideCode}>
+              claude /plugin install eulercb/github-kanban
+            </code>
+          </div>
+
+          <div className={styles.aiGuideSection}>
+            <strong className={styles.aiGuideSectionTitle}>
+              Step 2 &mdash; Generate your board
+            </strong>
+            <p>Run the skill and describe your workflow:</p>
+            <code className={styles.aiGuideCode}>
+              /github-kanban:generate-board pr-review for my-org/api and my-org/web
+            </code>
+            <p className={styles.aiGuideAlt}>
+              Or if you're working inside this repo, you can use{' '}
+              <code>/generate-board</code> directly.
+            </p>
+          </div>
+
+          <div className={styles.aiGuideSection}>
+            <strong className={styles.aiGuideSectionTitle}>
+              Step 3 &mdash; Paste the result
+            </strong>
+            <p>
               Copy the generated JSON, then go to{' '}
               <strong>Settings &gt; Import / Export &gt; Paste Configuration</strong>{' '}
               and paste it.
-            </li>
-          </ol>
-          <details className={styles.aiGuideDetails}>
-            <summary>Install the slash command globally</summary>
-            <p>
-              To use <code>/generate-board</code> from any project, copy the
-              command file to your user-level Claude Code config:
             </p>
-            <code className={styles.aiGuideCode}>
-              cp .claude/commands/generate-board.md ~/.claude/commands/
-            </code>
+          </div>
+
+          <details className={styles.aiGuideDetails}>
+            <summary>Alternative: use any AI assistant</summary>
+            <p>
+              You don't need Claude Code. Ask any AI assistant to generate a
+              GitHub Kanban Board JSON configuration. Describe the repos you
+              want to track and what columns you need (e.g., "my open PRs",
+              "PRs with failing CI", "issues assigned to me"). Then paste the
+              JSON in Settings.
+            </p>
           </details>
         </div>
       )}

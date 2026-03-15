@@ -1,0 +1,11 @@
+{
+  "name": "github-kanban",
+  "description": "Generate and manage GitHub Kanban board configurations with intelligent filtering",
+  "version": "1.0.0",
+  "author": {
+    "name": "eulercb",
+    "url": "https://github.com/eulercb"
+  },
+  "homepage": "https://github.com/eulercb/github-kanban",
+  "repository": "https://github.com/eulercb/github-kanban"
+}
