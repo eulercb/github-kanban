@@ -68,6 +68,12 @@ export function TokenSetup() {
             </li>
             <li>Click "Generate token" and copy it</li>
           </ol>
+          <div className={styles.scopeOption}>
+            <strong>Optional:</strong> Add the <code>gist</code> scope to
+            enable saving and restoring your board configuration to a GitHub
+            Gist. This lets you sync your setup across browsers and devices.
+            You can always add this scope later by editing your token.
+          </div>
           <p className={styles.note}>
             Tip: For fine-grained tokens, grant "Read" access to Issues and
             Pull Requests.

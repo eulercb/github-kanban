@@ -17,6 +17,7 @@ const DEFAULT_STATE: AppState = {
   boards: [],
   activeBoardId: null,
   settings: DEFAULT_SETTINGS,
+  gistId: null,
 };
 
 export function loadState(): AppState {

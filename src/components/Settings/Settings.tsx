@@ -1,7 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useApp } from '../../contexts/AppContext';
 import { exportSettings } from '../../utils/export';
-import { validateToken, initOctokit } from '../../services/github';
+import {
+  validateToken,
+  initOctokit,
+  checkGistScope,
+  saveConfigToGist,
+  findConfigGist,
+  loadConfigFromGist,
+} from '../../services/github';
 import type { AppSettings, ExportData, ThemeMode, BoardConfig } from '../../types';
 import styles from './Settings.module.css';
 
@@ -12,7 +19,7 @@ interface Props {
 type Tab = 'general' | 'boards' | 'data';
 
 export function Settings({ onClose }: Props) {
-  const { state, updateSettings, updateBoard, deleteBoard, setToken, setUser } = useApp();
+  const { state, updateSettings, updateBoard, deleteBoard, setToken, setUser, setGistId } = useApp();
   const [activeTab, setActiveTab] = useState<Tab>('general');
   const [settings, setSettings] = useState<AppSettings>({ ...state.settings });
   const [editingBoard, setEditingBoard] = useState<string | null>(null);
@@ -23,6 +30,73 @@ export function Settings({ onClose }: Props) {
   const [tokenValidating, setTokenValidating] = useState(false);
   const [tokenError, setTokenError] = useState<string | null>(null);
   const [tokenSuccess, setTokenSuccess] = useState(false);
+  const [hasGistScope, setHasGistScope] = useState<boolean | null>(null);
+  const [gistLoading, setGistLoading] = useState(false);
+  const [gistMessage, setGistMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  useEffect(() => {
+    checkGistScope().then(setHasGistScope);
+  }, []);
+
+  const handleExportToGist = async () => {
+    setGistLoading(true);
+    setGistMessage(null);
+    try {
+      const data: ExportData = {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        boards: state.boards,
+        settings: state.settings,
+      };
+      const id = await saveConfigToGist(data, state.gistId);
+      setGistId(id);
+      setGistMessage({ type: 'success', text: 'Configuration saved to Gist.' });
+    } catch (err) {
+      setGistMessage({
+        type: 'error',
+        text: err instanceof Error ? err.message : 'Failed to save to Gist',
+      });
+    } finally {
+      setGistLoading(false);
+    }
+  };
+
+  const handleImportFromGist = async () => {
+    setGistLoading(true);
+    setGistMessage(null);
+    try {
+      let data: ExportData;
+      if (state.gistId) {
+        data = await loadConfigFromGist(state.gistId);
+      } else {
+        const found = await findConfigGist();
+        if (!found) {
+          setGistMessage({ type: 'error', text: 'No configuration Gist found for your account.' });
+          return;
+        }
+        setGistId(found.id);
+        data = found.data;
+      }
+      if (!data.version || !Array.isArray(data.boards)) {
+        throw new Error('Invalid configuration format in Gist');
+      }
+      for (const board of data.boards) {
+        updateBoard(board);
+      }
+      if (data.settings) {
+        updateSettings(data.settings);
+        setSettings(data.settings);
+      }
+      setGistMessage({ type: 'success', text: `Restored ${data.boards.length} board(s) from Gist.` });
+    } catch (err) {
+      setGistMessage({
+        type: 'error',
+        text: err instanceof Error ? err.message : 'Failed to restore from Gist',
+      });
+    } finally {
+      setGistLoading(false);
+    }
+  };
 
   const handleReplaceToken = async () => {
     const trimmed = newToken.trim();
@@ -384,7 +458,7 @@ export function Settings({ onClose }: Props) {
                   this file on another device.
                 </p>
                 <button className={styles.actionBtn} onClick={handleExport}>
-                  Export Data
+                  Export to File
                 </button>
               </div>
 
@@ -405,6 +479,59 @@ export function Settings({ onClose }: Props) {
                 </label>
                 {importError && (
                   <div className={styles.error}>{importError}</div>
+                )}
+              </div>
+
+              <div className={styles.divider} />
+
+              <div className={styles.field}>
+                <label className={styles.label}>GitHub Gist Sync</label>
+                {hasGistScope === false && (
+                  <div className={styles.gistScopeNotice}>
+                    Your token does not include the <code>gist</code> scope.
+                    To enable Gist sync,{' '}
+                    <a
+                      href="https://github.com/settings/tokens"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      edit your token
+                    </a>{' '}
+                    and add the <code>gist</code> permission.
+                  </div>
+                )}
+                {hasGistScope === true && (
+                  <>
+                    <p className={styles.hint}>
+                      Save your configuration to a private GitHub Gist to sync
+                      across browsers and devices.
+                      {state.gistId && ' Your config is linked to an existing Gist.'}
+                    </p>
+                    <div className={styles.gistActions}>
+                      <button
+                        className={styles.actionBtn}
+                        onClick={handleExportToGist}
+                        disabled={gistLoading}
+                      >
+                        {gistLoading ? 'Saving...' : 'Save to Gist'}
+                      </button>
+                      <button
+                        className={styles.actionBtn}
+                        onClick={handleImportFromGist}
+                        disabled={gistLoading}
+                      >
+                        {gistLoading ? 'Loading...' : 'Restore from Gist'}
+                      </button>
+                    </div>
+                  </>
+                )}
+                {hasGistScope === null && (
+                  <p className={styles.hint}>Checking Gist permissions...</p>
+                )}
+                {gistMessage && (
+                  <div className={gistMessage.type === 'success' ? styles.success : styles.error}>
+                    {gistMessage.text}
+                  </div>
                 )}
               </div>
             </div>

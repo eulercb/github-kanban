@@ -141,6 +141,7 @@ export interface AppState {
   boards: BoardConfig[];
   activeBoardId: string | null;
   settings: AppSettings;
+  gistId: string | null;
 }
 
 // Export config for import/export feature
