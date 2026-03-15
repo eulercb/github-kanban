@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useApp } from '../../contexts/AppContext';
 import { exportSettings } from '../../utils/export';
+import { validateToken, initOctokit } from '../../services/github';
 import type { AppSettings, ExportData, ThemeMode, BoardConfig } from '../../types';
 import styles from './Settings.module.css';
 
@@ -11,12 +12,44 @@ interface Props {
 type Tab = 'general' | 'boards' | 'data';
 
 export function Settings({ onClose }: Props) {
-  const { state, updateSettings, updateBoard, deleteBoard } = useApp();
+  const { state, updateSettings, updateBoard, deleteBoard, setToken, setUser } = useApp();
   const [activeTab, setActiveTab] = useState<Tab>('general');
   const [settings, setSettings] = useState<AppSettings>({ ...state.settings });
   const [editingBoard, setEditingBoard] = useState<string | null>(null);
   const [editBoardName, setEditBoardName] = useState('');
   const [importError, setImportError] = useState<string | null>(null);
+  const [showTokenInput, setShowTokenInput] = useState(false);
+  const [newToken, setNewToken] = useState('');
+  const [tokenValidating, setTokenValidating] = useState(false);
+  const [tokenError, setTokenError] = useState<string | null>(null);
+  const [tokenSuccess, setTokenSuccess] = useState(false);
+
+  const handleReplaceToken = async () => {
+    const trimmed = newToken.trim();
+    if (!trimmed) return;
+
+    setTokenValidating(true);
+    setTokenError(null);
+    setTokenSuccess(false);
+
+    try {
+      const user = await validateToken(trimmed);
+      initOctokit(trimmed);
+      setToken(trimmed);
+      setUser(user);
+      setTokenSuccess(true);
+      setNewToken('');
+      setShowTokenInput(false);
+    } catch (err) {
+      setTokenError(
+        err instanceof Error
+          ? err.message
+          : 'Invalid token. Please check and try again.'
+      );
+    } finally {
+      setTokenValidating(false);
+    }
+  };
 
   const handleSave = () => {
     updateSettings(settings);
@@ -212,6 +245,78 @@ export function Settings({ onClose }: Props) {
                       : 'Show full card details'}
                   </span>
                 </div>
+              </div>
+
+              <div className={styles.divider} />
+
+              <div className={styles.field}>
+                <label className={styles.label}>Personal Access Token</label>
+                <p className={styles.hint}>
+                  Replace your GitHub token if it has expired or you want to
+                  switch accounts.
+                </p>
+                {tokenSuccess && (
+                  <div className={styles.success}>Token updated successfully.</div>
+                )}
+                {!showTokenInput ? (
+                  <div className={styles.tokenRow}>
+                    <code className={styles.tokenMask}>
+                      {'•'.repeat(8)}...{'•'.repeat(4)}
+                    </code>
+                    <button
+                      className={styles.actionBtn}
+                      onClick={() => {
+                        setShowTokenInput(true);
+                        setTokenSuccess(false);
+                      }}
+                    >
+                      Replace Token
+                    </button>
+                  </div>
+                ) : (
+                  <div className={styles.tokenForm}>
+                    <input
+                      type="password"
+                      value={newToken}
+                      onChange={(e) => setNewToken(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleReplaceToken();
+                        if (e.key === 'Escape') {
+                          setShowTokenInput(false);
+                          setNewToken('');
+                          setTokenError(null);
+                        }
+                      }}
+                      placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+                      className={styles.input}
+                      autoFocus
+                      disabled={tokenValidating}
+                    />
+                    {tokenError && (
+                      <div className={styles.error}>{tokenError}</div>
+                    )}
+                    <div className={styles.tokenActions}>
+                      <button
+                        className={styles.cancelBtn}
+                        onClick={() => {
+                          setShowTokenInput(false);
+                          setNewToken('');
+                          setTokenError(null);
+                        }}
+                        disabled={tokenValidating}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        className={styles.saveBtn}
+                        onClick={handleReplaceToken}
+                        disabled={!newToken.trim() || tokenValidating}
+                      >
+                        {tokenValidating ? 'Validating...' : 'Update Token'}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
