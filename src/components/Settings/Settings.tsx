@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useApp } from '../../contexts/AppContext';
 import { exportSettings } from '../../utils/export';
+import { computeConfigHash, setGistSyncHash } from '../../utils/storage';
 import {
   validateToken,
   initOctokit,
@@ -52,6 +53,7 @@ export function Settings({ onClose }: Props) {
       };
       const id = await saveConfigToGist(data, state.gistId);
       setGistId(id);
+      setGistSyncHash(computeConfigHash(state.boards, state.settings));
       setGistMessage({ type: 'success', text: 'Configuration saved to Gist.' });
     } catch (err) {
       setGistMessage({
@@ -89,6 +91,9 @@ export function Settings({ onClose }: Props) {
         updateSettings(data.settings);
         setSettings(data.settings);
       }
+      const restoredBoards = data.boards.length > 0 ? data.boards : state.boards;
+      const restoredSettings = data.settings ?? state.settings;
+      setGistSyncHash(computeConfigHash(restoredBoards, restoredSettings));
       setGistMessage({ type: 'success', text: `Restored ${data.boards.length} board(s) from Gist.` });
     } catch (err) {
       setGistMessage({

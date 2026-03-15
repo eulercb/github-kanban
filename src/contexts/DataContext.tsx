@@ -8,8 +8,13 @@ import {
   type ReactNode,
 } from 'react';
 import type { GitHubEntity } from '../types';
-import { fetchAllRepoData } from '../services/github';
+import { fetchAllRepoData, saveConfigToGist } from '../services/github';
 import { useApp } from './AppContext';
+import {
+  computeConfigHash,
+  getGistSyncHash,
+  setGistSyncHash,
+} from '../utils/storage';
 
 interface DataContextValue {
   entities: GitHubEntity[];
@@ -33,6 +38,34 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const activeBoard = state.boards.find((b) => b.id === state.activeBoardId);
   const repos = activeBoard?.repos ?? [];
   const reposKey = repos.join(',');
+  const isSyncingGistRef = useRef(false);
+
+  const syncGistIfNeeded = useCallback(() => {
+    if (!state.gistId || isSyncingGistRef.current) return;
+
+    const currentHash = computeConfigHash(state.boards, state.settings);
+    const lastHash = getGistSyncHash();
+    if (currentHash === lastHash) return;
+
+    isSyncingGistRef.current = true;
+    const exportData = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      boards: state.boards,
+      settings: state.settings,
+    };
+
+    saveConfigToGist(exportData, state.gistId)
+      .then(() => {
+        setGistSyncHash(currentHash);
+      })
+      .catch(() => {
+        // Silent failure — will retry on next refresh cycle
+      })
+      .finally(() => {
+        isSyncingGistRef.current = false;
+      });
+  }, [state.gistId, state.boards, state.settings]);
 
   const refresh = useCallback(async () => {
     if (!state.token || repos.length === 0 || isRefreshingRef.current) return;
@@ -58,13 +91,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
       setEntities(allEntities);
       setLastRefresh(new Date());
+      syncGistIfNeeded();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch data');
     } finally {
       setIsLoading(false);
       isRefreshingRef.current = false;
     }
-  }, [state.token, reposKey]);
+  }, [state.token, reposKey, syncGistIfNeeded]);
 
   // Initial fetch when repos change
   useEffect(() => {

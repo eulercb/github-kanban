@@ -2,6 +2,7 @@ import type { AppState, AppSettings, BoardConfig } from '../types';
 
 const STORAGE_KEY = 'github-kanban';
 const TOKEN_KEY = 'github-kanban-token';
+const GIST_SYNC_HASH_KEY = 'github-kanban-gist-sync-hash';
 
 export const DEFAULT_SETTINGS: AppSettings = {
   theme: 'system',
@@ -69,7 +70,24 @@ export function saveToken(token: string | null): void {
   }
 }
 
+export function computeConfigHash(boards: BoardConfig[], settings: AppSettings): string {
+  return JSON.stringify({ boards, settings });
+}
+
+export function getGistSyncHash(): string | null {
+  return localStorage.getItem(GIST_SYNC_HASH_KEY);
+}
+
+export function setGistSyncHash(hash: string): void {
+  localStorage.setItem(GIST_SYNC_HASH_KEY, hash);
+}
+
+export function clearGistSyncHash(): void {
+  localStorage.removeItem(GIST_SYNC_HASH_KEY);
+}
+
 export function clearAllData(): void {
   localStorage.removeItem(STORAGE_KEY);
   localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(GIST_SYNC_HASH_KEY);
 }
