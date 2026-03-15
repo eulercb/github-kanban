@@ -98,6 +98,7 @@ export type FilterField =
   | 'label'          // label name
   | 'milestone'      // milestone title
   | 'repo'           // owner/repo
+  | 'org'            // repository owner / organisation
   | 'draft'          // true/false
   | 'review_status'  // approved, changes_requested, review_required, pending, none
   | 'ci_status'      // success, failure, pending, none
