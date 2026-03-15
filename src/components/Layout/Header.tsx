@@ -2,13 +2,15 @@ import { useState } from 'react';
 import { useApp } from '../../contexts/AppContext';
 import { useData } from '../../contexts/DataContext';
 import { Settings } from '../Settings/Settings';
+import { LogoutDialog } from './LogoutDialog';
 import styles from './Header.module.css';
 
 export function Header() {
-  const { state, logout } = useApp();
+  const { state } = useApp();
   const { isLoading, lastRefresh, refresh } = useData();
   const [showSettings, setShowSettings] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
   const formatLastRefresh = () => {
     if (!lastRefresh) return null;
@@ -92,7 +94,7 @@ export function Header() {
                       className={styles.menuItem}
                       onClick={() => {
                         setShowUserMenu(false);
-                        logout();
+                        setShowLogoutDialog(true);
                       }}
                     >
                       Sign out
@@ -106,6 +108,7 @@ export function Header() {
       </header>
 
       {showSettings && <Settings onClose={() => setShowSettings(false)} />}
+      {showLogoutDialog && <LogoutDialog onClose={() => setShowLogoutDialog(false)} />}
     </>
   );
 }

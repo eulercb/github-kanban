@@ -1,0 +1,91 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.dialog {
+  width: 420px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  padding: 20px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.header h3 {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.warningIcon {
+  color: var(--accent-warning);
+}
+
+.message {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.cancelBtn {
+  padding: 6px 14px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.cancelBtn:hover {
+  background: var(--bg-secondary);
+}
+
+.exportBtn {
+  padding: 6px 14px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.exportBtn:hover {
+  background: var(--bg-secondary);
+}
+
+.logoutBtn {
+  padding: 6px 14px;
+  border: 1px solid var(--accent-danger);
+  border-radius: var(--radius-md);
+  background: var(--accent-danger);
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.logoutBtn:hover {
+  opacity: 0.9;
+}

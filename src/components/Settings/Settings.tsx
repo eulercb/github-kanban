@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useApp } from '../../contexts/AppContext';
+import { exportSettings } from '../../utils/export';
 import type { AppSettings, ExportData, ThemeMode, BoardConfig } from '../../types';
 import styles from './Settings.module.css';
 
@@ -23,21 +24,7 @@ export function Settings({ onClose }: Props) {
   };
 
   const handleExport = () => {
-    const data: ExportData = {
-      version: 1,
-      exportedAt: new Date().toISOString(),
-      boards: state.boards,
-      settings: state.settings,
-    };
-    const blob = new Blob([JSON.stringify(data, null, 2)], {
-      type: 'application/json',
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `github-kanban-export-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    exportSettings(state);
   };
 
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
