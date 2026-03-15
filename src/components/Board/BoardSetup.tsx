@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { BoardConfig, ColumnConfig } from '../../types';
 import { generateId } from '../../utils/id';
 import { searchRepos } from '../../services/github';
+import { useApp } from '../../contexts/AppContext';
+import { useDebounce } from '../../hooks/useDebounce';
 import styles from './BoardSetup.module.css';
 
 interface Props {
@@ -94,31 +96,54 @@ const PRESET_COLUMNS: { name: string; columns: Omit<ColumnConfig, 'id'>[] }[] = 
 ];
 
 export function BoardSetup({ onSave, onCancel, initialBoard }: Props) {
+  const { state } = useApp();
   const [name, setName] = useState(initialBoard?.name ?? '');
   const [repos, setRepos] = useState<string[]>(initialBoard?.repos ?? []);
   const [repoInput, setRepoInput] = useState('');
   const [searchResults, setSearchResults] = useState<string[]>([]);
   const [searching, setSearching] = useState(false);
   const [selectedPreset, setSelectedPreset] = useState<number>(0);
+  const [scopeToUser, setScopeToUser] = useState(true);
   const isEditing = !!initialBoard;
 
-  const handleSearch = async (query: string) => {
-    setRepoInput(query);
-    if (query.length < 2) {
+  const debouncedQuery = useDebounce(repoInput, 350);
+  const searchAbortRef = useRef<AbortController | null>(null);
+
+  // Run search when debounced query changes
+  useEffect(() => {
+    if (debouncedQuery.length < 2) {
       setSearchResults([]);
+      setSearching(false);
       return;
     }
 
+    // Cancel any in-flight search
+    searchAbortRef.current?.abort();
+    const controller = new AbortController();
+    searchAbortRef.current = controller;
+
     setSearching(true);
-    try {
-      const results = await searchRepos(query);
-      setSearchResults(results.filter((r) => !repos.includes(r)));
-    } catch {
-      setSearchResults([]);
-    } finally {
-      setSearching(false);
-    }
-  };
+    const scopeLogin = scopeToUser ? state.currentUser?.login : undefined;
+
+    searchRepos(debouncedQuery, scopeLogin)
+      .then((results) => {
+        if (!controller.signal.aborted) {
+          setSearchResults(results.filter((r) => !repos.includes(r)));
+        }
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) {
+          setSearchResults([]);
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setSearching(false);
+        }
+      });
+
+    return () => controller.abort();
+  }, [debouncedQuery, scopeToUser, state.currentUser?.login, repos]);
 
   const addRepo = (repo: string) => {
     if (!repos.includes(repo)) {
@@ -190,7 +215,7 @@ export function BoardSetup({ onSave, onCancel, initialBoard }: Props) {
           <input
             type="text"
             value={repoInput}
-            onChange={(e) => handleSearch(e.target.value)}
+            onChange={(e) => setRepoInput(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault();
@@ -202,6 +227,32 @@ export function BoardSetup({ onSave, onCancel, initialBoard }: Props) {
           />
           {searching && <span className={styles.spinner}>Searching...</span>}
         </div>
+
+        {scopeToUser && state.currentUser && (
+          <div className={styles.scopeFilter}>
+            <span>Showing repos from your account &amp; orgs</span>
+            <button
+              type="button"
+              className={styles.scopeDismiss}
+              onClick={() => setScopeToUser(false)}
+              title="Search all of GitHub"
+            >
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L9.06 8l3.22 3.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L8 9.06l-3.22 3.22a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z" />
+              </svg>
+            </button>
+          </div>
+        )}
+
+        {!scopeToUser && state.currentUser && (
+          <button
+            type="button"
+            className={styles.scopeRestore}
+            onClick={() => setScopeToUser(true)}
+          >
+            Show only your repos
+          </button>
+        )}
 
         {searchResults.length > 0 && (
           <div className={styles.searchResults}>

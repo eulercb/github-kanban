@@ -211,11 +211,16 @@ export async function fetchAllRepoData(
   return result;
 }
 
-export async function searchRepos(query: string): Promise<string[]> {
+export async function searchRepos(
+  query: string,
+  scopeUser?: string
+): Promise<string[]> {
   const kit = getOctokit();
+  const q = scopeUser ? `${query} user:${scopeUser}` : query;
   const { data } = await kit.rest.search.repos({
-    q: query,
-    per_page: 10,
+    q,
+    per_page: 15,
+    sort: 'updated',
   });
   return data.items.map((item) => item.full_name);
 }
