@@ -309,7 +309,8 @@ export interface RepoData {
 }
 
 export async function fetchAllRepoData(
-  repos: string[]
+  repos: string[],
+  onRepoComplete?: (result: Map<string, RepoData>) => void,
 ): Promise<Map<string, RepoData>> {
   const result = new Map<string, RepoData>();
 
@@ -323,13 +324,16 @@ export async function fetchAllRepoData(
         fetchRepoPullRequests(owner, repo, 'all'),
       ]);
 
-      // Enrich PRs with review/CI/thread data via GraphQL
-      await enrichPullRequests(owner, repo, pullRequests);
-
       // Filter out issues that are actually PRs (GitHub API returns PRs in issues endpoint)
       const realIssues = issues.filter((i) => !i.pull_request);
 
+      // Show REST data immediately, before GraphQL enrichment
       result.set(repoFullName, { issues: realIssues, pullRequests });
+      onRepoComplete?.(result);
+
+      // Enrich PRs with review/CI/thread data via GraphQL
+      await enrichPullRequests(owner, repo, pullRequests);
+      onRepoComplete?.(result);
     })
   );
 
