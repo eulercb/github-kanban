@@ -10,7 +10,7 @@ import {
   findConfigGist,
   loadConfigFromGist,
 } from '../../services/github';
-import type { AppSettings, ExportData, ThemeMode, BoardConfig, CardDisplaySettings } from '../../types';
+import type { ExportData, ThemeMode, BoardConfig, CardDisplaySettings } from '../../types';
 import styles from './Settings.module.css';
 
 interface Props {
@@ -22,7 +22,7 @@ type Tab = 'general' | 'boards' | 'data';
 export function Settings({ onClose }: Props) {
   const { state, updateSettings, updateBoard, deleteBoard, setToken, setUser, setGistId } = useApp();
   const [activeTab, setActiveTab] = useState<Tab>('general');
-  const [settings, setSettings] = useState<AppSettings>({ ...state.settings });
+  const settings = state.settings;
   const [editingBoard, setEditingBoard] = useState<string | null>(null);
   const [editBoardName, setEditBoardName] = useState('');
   const [importError, setImportError] = useState<string | null>(null);
@@ -89,7 +89,6 @@ export function Settings({ onClose }: Props) {
       }
       if (data.settings) {
         updateSettings(data.settings);
-        setSettings(data.settings);
       }
       const restoredBoards = data.boards.length > 0 ? data.boards : state.boards;
       const restoredSettings = data.settings ?? state.settings;
@@ -132,11 +131,6 @@ export function Settings({ onClose }: Props) {
     }
   };
 
-  const handleSave = () => {
-    updateSettings(settings);
-    onClose();
-  };
-
   const handleExport = () => {
     exportSettings(state);
   };
@@ -151,7 +145,6 @@ export function Settings({ onClose }: Props) {
     }
     if (data.settings) {
       updateSettings(data.settings);
-      setSettings(data.settings);
     }
     return data.boards.length;
   };
@@ -243,7 +236,7 @@ export function Settings({ onClose }: Props) {
                 <select
                   value={settings.theme}
                   onChange={(e) =>
-                    setSettings({ ...settings, theme: e.target.value as ThemeMode })
+                    updateSettings({ ...settings, theme: e.target.value as ThemeMode })
                   }
                   className={styles.select}
                 >
@@ -261,7 +254,7 @@ export function Settings({ onClose }: Props) {
                       type="checkbox"
                       checked={settings.autoRefreshEnabled}
                       onChange={(e) =>
-                        setSettings({
+                        updateSettings({
                           ...settings,
                           autoRefreshEnabled: e.target.checked,
                         })
@@ -286,7 +279,7 @@ export function Settings({ onClose }: Props) {
                     max={60}
                     value={settings.autoRefreshInterval}
                     onChange={(e) =>
-                      setSettings({
+                      updateSettings({
                         ...settings,
                         autoRefreshInterval: Math.max(
                           1,
@@ -308,7 +301,7 @@ export function Settings({ onClose }: Props) {
                       type="checkbox"
                       checked={settings.refreshOnFocus}
                       onChange={(e) =>
-                        setSettings({
+                        updateSettings({
                           ...settings,
                           refreshOnFocus: e.target.checked,
                         })
@@ -330,7 +323,7 @@ export function Settings({ onClose }: Props) {
                       type="checkbox"
                       checked={settings.compactCards}
                       onChange={(e) =>
-                        setSettings({
+                        updateSettings({
                           ...settings,
                           compactCards: e.target.checked,
                         })
@@ -356,7 +349,7 @@ export function Settings({ onClose }: Props) {
                         type="checkbox"
                         checked={settings.cardDisplay[key]}
                         onChange={(e) =>
-                          setSettings({
+                          updateSettings({
                             ...settings,
                             cardDisplay: {
                               ...settings.cardDisplay,
@@ -613,14 +606,6 @@ export function Settings({ onClose }: Props) {
           )}
         </div>
 
-        <div className={styles.footer}>
-          <button className={styles.cancelBtn} onClick={onClose}>
-            Cancel
-          </button>
-          <button className={styles.saveBtn} onClick={handleSave}>
-            Save
-          </button>
-        </div>
       </div>
     </div>
   );
