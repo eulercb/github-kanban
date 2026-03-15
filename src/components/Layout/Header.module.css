@@ -122,6 +122,12 @@
   border-bottom: 1px solid var(--border-default);
 }
 
+.menuDivider {
+  height: 1px;
+  background: var(--border-default);
+  margin: 4px 0;
+}
+
 .menuItem {
   display: block;
   width: 100%;
