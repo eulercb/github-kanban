@@ -181,6 +181,128 @@ export async function fetchRepoPullRequests(
   return prs;
 }
 
+// --- GraphQL PR enrichment ---
+
+const PR_DETAILS_FRAGMENT = `
+  fragment PrDetails on PullRequest {
+    number
+    reviewDecision
+    reviews(last: 100) {
+      nodes { state author { login } }
+    }
+    reviewThreads(first: 100) {
+      nodes { isResolved }
+    }
+    commits(last: 1) {
+      nodes {
+        commit {
+          statusCheckRollup { state }
+        }
+      }
+    }
+    files(first: 100) {
+      nodes { viewerViewedState }
+    }
+  }
+`;
+
+interface GraphQLPrData {
+  number: number;
+  reviewDecision: string | null;
+  reviews: { nodes: { state: string; author: { login: string } | null }[] };
+  reviewThreads: { nodes: { isResolved: boolean }[] };
+  commits: { nodes: { commit: { statusCheckRollup: { state: string } | null } }[] };
+  files: { nodes: { viewerViewedState: string }[] };
+}
+
+function mapCiStatus(state: string | undefined): GitHubPullRequest['ci_status'] {
+  if (!state) return 'none';
+  switch (state.toUpperCase()) {
+    case 'SUCCESS': return 'success';
+    case 'FAILURE': case 'ERROR': return 'failure';
+    case 'PENDING': case 'EXPECTED': return 'pending';
+    default: return 'none';
+  }
+}
+
+function mapReviewDecision(decision: string | null): GitHubPullRequest['review_decision'] {
+  if (!decision) return 'none';
+  switch (decision) {
+    case 'APPROVED': return 'approved';
+    case 'CHANGES_REQUESTED': return 'changes_requested';
+    case 'REVIEW_REQUIRED': return 'review_required';
+    default: return 'none';
+  }
+}
+
+function enrichPr(pr: GitHubPullRequest, gql: GraphQLPrData): void {
+  pr.review_decision = mapReviewDecision(gql.reviewDecision);
+
+  // Count unique latest reviews by author
+  const latestByAuthor = new Map<string, string>();
+  for (const r of gql.reviews.nodes) {
+    if (r.author?.login) {
+      latestByAuthor.set(r.author.login, r.state);
+    }
+  }
+  pr.approved_count = [...latestByAuthor.values()].filter((s) => s === 'APPROVED').length;
+  pr.changes_requested_count = [...latestByAuthor.values()].filter((s) => s === 'CHANGES_REQUESTED').length;
+
+  // Unresolved comment threads
+  pr.unresolved_comment_count = gql.reviewThreads.nodes.filter((t) => !t.isResolved).length;
+
+  // CI status from the latest commit
+  const rollup = gql.commits.nodes[0]?.commit?.statusCheckRollup;
+  pr.ci_status = mapCiStatus(rollup?.state);
+
+  // Unviewed files
+  pr.unviewed_files_count = gql.files.nodes.filter((f) => f.viewerViewedState !== 'VIEWED').length;
+}
+
+const BATCH_SIZE = 30;
+
+async function enrichPullRequests(
+  owner: string,
+  repo: string,
+  prs: GitHubPullRequest[],
+): Promise<void> {
+  if (prs.length === 0) return;
+  const kit = getOctokit();
+
+  for (let i = 0; i < prs.length; i += BATCH_SIZE) {
+    const batch = prs.slice(i, i + BATCH_SIZE);
+    const aliases = batch
+      .map((pr, idx) => `pr_${idx}: pullRequest(number: ${pr.number}) { ...PrDetails }`)
+      .join('\n');
+
+    const query = `
+      ${PR_DETAILS_FRAGMENT}
+      query ($owner: String!, $repo: String!) {
+        repository(owner: $owner, name: $repo) {
+          ${aliases}
+        }
+      }
+    `;
+
+    try {
+      const data: { repository: Record<string, GraphQLPrData> } = await kit.graphql(query, {
+        owner,
+        repo,
+      });
+
+      for (let idx = 0; idx < batch.length; idx++) {
+        const gqlPr = data.repository[`pr_${idx}`];
+        if (gqlPr) {
+          enrichPr(batch[idx], gqlPr);
+        }
+      }
+    } catch {
+      // If GraphQL enrichment fails, leave enriched fields as undefined
+      break;
+    }
+  }
+}
+
 export interface RepoData {
   issues: GitHubIssue[];
   pullRequests: GitHubPullRequest[];
@@ -200,6 +322,9 @@ export async function fetchAllRepoData(
         fetchRepoIssues(owner, repo, 'all'),
         fetchRepoPullRequests(owner, repo, 'all'),
       ]);
+
+      // Enrich PRs with review/CI/thread data via GraphQL
+      await enrichPullRequests(owner, repo, pullRequests);
 
       // Filter out issues that are actually PRs (GitHub API returns PRs in issues endpoint)
       const realIssues = issues.filter((i) => !i.pull_request);

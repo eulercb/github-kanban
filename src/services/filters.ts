@@ -60,13 +60,30 @@ function matchesRule(entity: GitHubEntity, rule: FilterRule): boolean {
       break;
     case 'review_status':
       if (isPullRequest(entity)) {
-        if (entity.requested_reviewers.length > 0) {
-          fieldValue = 'pending';
-        } else {
-          fieldValue = 'none';
-        }
+        fieldValue = entity.review_decision ?? (entity.requested_reviewers.length > 0 ? 'review_required' : 'none');
       } else {
         fieldValue = 'none';
+      }
+      break;
+    case 'ci_status':
+      if (isPullRequest(entity)) {
+        fieldValue = entity.ci_status ?? 'none';
+      } else {
+        fieldValue = 'none';
+      }
+      break;
+    case 'has_unresolved_comments':
+      if (isPullRequest(entity)) {
+        fieldValue = (entity.unresolved_comment_count ?? 0) > 0 ? 'true' : 'false';
+      } else {
+        fieldValue = 'false';
+      }
+      break;
+    case 'has_unviewed_files':
+      if (isPullRequest(entity)) {
+        fieldValue = (entity.unviewed_files_count ?? 0) > 0 ? 'true' : 'false';
+      } else {
+        fieldValue = 'false';
       }
       break;
     case 'title':

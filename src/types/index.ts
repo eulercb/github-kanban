@@ -69,6 +69,13 @@ export interface GitHubPullRequest {
   base: { ref: string; sha: string };
   repository_url: string;
   mergeable_state?: string;
+  // Enriched fields (populated via GraphQL)
+  ci_status?: 'success' | 'failure' | 'pending' | 'none';
+  review_decision?: 'approved' | 'changes_requested' | 'review_required' | 'none';
+  approved_count?: number;
+  changes_requested_count?: number;
+  unresolved_comment_count?: number;
+  unviewed_files_count?: number;
 }
 
 export type GitHubEntity = GitHubIssue | GitHubPullRequest;
@@ -92,7 +99,10 @@ export type FilterField =
   | 'milestone'      // milestone title
   | 'repo'           // owner/repo
   | 'draft'          // true/false
-  | 'review_status'  // pending, approved, changes_requested
+  | 'review_status'  // approved, changes_requested, review_required, pending, none
+  | 'ci_status'      // success, failure, pending, none
+  | 'has_unresolved_comments' // true/false
+  | 'has_unviewed_files' // true/false
   | 'title'          // text search
   | 'has_pull_request'; // for issues linked to PRs
 
