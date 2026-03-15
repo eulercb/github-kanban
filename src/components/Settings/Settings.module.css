@@ -414,6 +414,34 @@
   font-size: 12px;
 }
 
+.permissionList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.permissionItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.permissionItem strong {
+  color: var(--text-primary);
+}
+
+.permissionGranted {
+  display: flex;
+  color: var(--accent-success);
+}
+
+.permissionMissing {
+  display: flex;
+  color: var(--accent-danger);
+}
+
 .gistActions {
   display: flex;
   gap: 8px;

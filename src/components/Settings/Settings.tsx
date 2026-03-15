@@ -17,7 +17,7 @@ interface Props {
   onClose: () => void;
 }
 
-type Tab = 'general' | 'boards' | 'data';
+type Tab = 'general' | 'boards' | 'token' | 'data';
 
 export function Settings({ onClose }: Props) {
   const { state, updateSettings, updateBoard, deleteBoard, setToken, setUser, setGistId } = useApp();
@@ -221,6 +221,12 @@ export function Settings({ onClose }: Props) {
             Boards
           </button>
           <button
+            className={`${styles.tab} ${activeTab === 'token' ? styles.tabActive : ''}`}
+            onClick={() => setActiveTab('token')}
+          >
+            Token
+          </button>
+          <button
             className={`${styles.tab} ${activeTab === 'data' ? styles.tabActive : ''}`}
             onClick={() => setActiveTab('data')}
           >
@@ -364,8 +370,11 @@ export function Settings({ onClose }: Props) {
                 </div>
               </div>
 
-              <div className={styles.divider} />
+            </div>
+          )}
 
+          {activeTab === 'token' && (
+            <div className={styles.section}>
               <div className={styles.field}>
                 <label className={styles.label}>Personal Access Token</label>
                 <p className={styles.hint}>
@@ -433,6 +442,53 @@ export function Settings({ onClose }: Props) {
                       </button>
                     </div>
                   </div>
+                )}
+              </div>
+
+              <div className={styles.divider} />
+
+              <div className={styles.field}>
+                <label className={styles.label}>Permissions</label>
+                <div className={styles.permissionList}>
+                  <div className={styles.permissionItem}>
+                    <span className={hasGistScope ? styles.permissionGranted : styles.permissionMissing}>
+                      {hasGistScope ? (
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                          <path d="M8 16A8 8 0 1 1 8 0a8 8 0 0 1 0 16Zm3.78-9.72a.751.751 0 0 0-.018-1.042.751.751 0 0 0-1.042-.018L6.75 9.19 5.28 7.72a.751.751 0 0 0-1.042.018.751.751 0 0 0-.018 1.042l2 2a.75.75 0 0 0 1.06 0Z" />
+                        </svg>
+                      ) : hasGistScope === false ? (
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                          <path d="M2.343 13.657A8 8 0 1 1 13.658 2.343 8 8 0 0 1 2.343 13.657ZM6.03 4.97a.751.751 0 0 0-1.042.018.751.751 0 0 0-.018 1.042L6.94 8 4.97 9.97a.751.751 0 0 0 .018 1.042.751.751 0 0 0 1.042.018L8 9.06l1.97 1.97a.751.751 0 0 0 1.042-.018.751.751 0 0 0 .018-1.042L9.06 8l1.97-1.97a.749.749 0 0 0-.326-1.275.749.749 0 0 0-.734.215L8 6.94Z" />
+                        </svg>
+                      ) : (
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                          <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7.25-3.25v2.992l2.028.812a.75.75 0 0 1-.556 1.392l-2.5-1a.751.751 0 0 1-.472-.696V4.75a.75.75 0 0 1 1.5 0Z" />
+                        </svg>
+                      )}
+                    </span>
+                    <span>
+                      <strong>gist</strong>
+                      {' \u2014 '}
+                      {hasGistScope === null
+                        ? 'Checking...'
+                        : hasGistScope
+                          ? 'Granted. Gist sync is available.'
+                          : 'Not granted. Required for Gist sync.'}
+                    </span>
+                  </div>
+                </div>
+                {hasGistScope === false && (
+                  <p className={styles.hint}>
+                    To enable Gist sync,{' '}
+                    <a
+                      href="https://github.com/settings/tokens"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      edit your token
+                    </a>{' '}
+                    and add the <code>gist</code> permission.
+                  </p>
                 )}
               </div>
             </div>
@@ -555,18 +611,10 @@ export function Settings({ onClose }: Props) {
               <div className={styles.field}>
                 <label className={styles.label}>GitHub Gist Sync</label>
                 {hasGistScope === false && (
-                  <div className={styles.gistScopeNotice}>
+                  <p className={styles.hint}>
                     Your token does not include the <code>gist</code> scope.
-                    To enable Gist sync,{' '}
-                    <a
-                      href="https://github.com/settings/tokens"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      edit your token
-                    </a>{' '}
-                    and add the <code>gist</code> permission.
-                  </div>
+                    See the Token tab for details.
+                  </p>
                 )}
                 {hasGistScope === true && (
                   <>
