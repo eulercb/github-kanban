@@ -28,6 +28,7 @@ export function BoardView() {
   const [showNewBoard, setShowNewBoard] = useState(false);
   const [editingBoard, setEditingBoard] = useState<BoardConfig | null>(null);
   const [showBoardMenu, setShowBoardMenu] = useState(false);
+  const [openFilterColumnId, setOpenFilterColumnId] = useState<string | null>(null);
 
   const activeBoard = state.boards.find((b) => b.id === state.activeBoardId);
 
@@ -229,6 +230,10 @@ export function BoardView() {
                 key={column.id}
                 column={column}
                 boardId={activeBoard.id}
+                showFilters={openFilterColumnId === column.id}
+                onToggleFilters={(id) =>
+                  setOpenFilterColumnId((prev) => (prev === id ? null : id))
+                }
               />
             ))}
           </SortableContext>

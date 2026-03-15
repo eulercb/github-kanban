@@ -12,14 +12,15 @@ import styles from './KanbanColumn.module.css';
 interface Props {
   column: ColumnConfig;
   boardId: string;
+  showFilters: boolean;
+  onToggleFilters: (columnId: string) => void;
 }
 
-export function KanbanColumn({ column, boardId }: Props) {
+export function KanbanColumn({ column, boardId, showFilters, onToggleFilters }: Props) {
   const { state, updateBoard } = useApp();
   const { entities } = useData();
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(column.title);
-  const [showFilters, setShowFilters] = useState(false);
 
   const board = state.boards.find((b) => b.id === boardId)!;
 
@@ -57,6 +58,12 @@ export function KanbanColumn({ column, boardId }: Props) {
     setIsEditing(false);
   };
 
+  const handleTitleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditTitle(column.title);
+    setIsEditing(true);
+  };
+
   const handleDelete = () => {
     const newColumns = board.columns.filter((c) => c.id !== column.id);
     updateBoard({ ...board, columns: newColumns });
@@ -70,39 +77,14 @@ export function KanbanColumn({ column, boardId }: Props) {
     updateColumn({ filterCombination });
   };
 
-  const toggleCollapse = () => {
-    updateColumn({ collapsed: !column.collapsed });
-  };
-
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`${styles.column} ${column.collapsed ? styles.collapsed : ''}`}
+      className={styles.column}
     >
       <div className={styles.header} {...attributes} {...listeners}>
         <div className={styles.headerLeft}>
-          <button
-            className={styles.collapseBtn}
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleCollapse();
-            }}
-          >
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 16 16"
-              fill="currentColor"
-              style={{
-                transform: column.collapsed ? 'rotate(-90deg)' : 'none',
-                transition: 'transform 150ms',
-              }}
-            >
-              <path d="M12.78 5.22a.749.749 0 0 1 0 1.06l-4.25 4.25a.749.749 0 0 1-1.06 0L3.22 6.28a.749.749 0 1 1 1.06-1.06L8 8.939l3.72-3.719a.749.749 0 0 1 1.06 0Z" />
-            </svg>
-          </button>
-
           {isEditing ? (
             <input
               autoFocus
@@ -119,10 +101,7 @@ export function KanbanColumn({ column, boardId }: Props) {
           ) : (
             <h3
               className={styles.title}
-              onDoubleClick={() => {
-                setEditTitle(column.title);
-                setIsEditing(true);
-              }}
+              onClick={handleTitleClick}
             >
               {column.title}
             </h3>
@@ -136,7 +115,7 @@ export function KanbanColumn({ column, boardId }: Props) {
             className={`${styles.actionBtn} ${showFilters ? styles.actionActive : ''}`}
             onClick={(e) => {
               e.stopPropagation();
-              setShowFilters(!showFilters);
+              onToggleFilters(column.id);
             }}
             title="Edit filters"
           >
@@ -171,21 +150,19 @@ export function KanbanColumn({ column, boardId }: Props) {
         </div>
       )}
 
-      {!column.collapsed && (
-        <div className={styles.cards}>
-          {filteredEntities.length === 0 ? (
-            <div className={styles.empty}>
-              {column.filters.length === 0
-                ? 'Add filters to see items'
-                : 'No items match filters'}
-            </div>
-          ) : (
-            filteredEntities.map((entity) => (
-              <EntityCard key={`${entity.id}-${entity.html_url}`} entity={entity} />
-            ))
-          )}
-        </div>
-      )}
+      <div className={styles.cards}>
+        {filteredEntities.length === 0 ? (
+          <div className={styles.empty}>
+            {column.filters.length === 0
+              ? 'Add filters to see items'
+              : 'No items match filters'}
+          </div>
+        ) : (
+          filteredEntities.map((entity) => (
+            <EntityCard key={`${entity.id}-${entity.html_url}`} entity={entity} />
+          ))
+        )}
+      </div>
     </div>
   );
 }

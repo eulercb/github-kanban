@@ -70,15 +70,29 @@ export function FilterEditor({
   };
 
   const getSuggestions = (field: FilterField): string[] => {
-    const suggestions = VALUE_SUGGESTIONS[field] ?? [];
+    const base = VALUE_SUGGESTIONS[field] ?? [];
     if (
       (field === 'assignee' || field === 'author') &&
-      currentUser &&
-      !suggestions.includes(currentUser)
+      currentUser
     ) {
-      return [currentUser, ...suggestions];
+      return ['me', ...base];
     }
-    return suggestions;
+    return base;
+  };
+
+  // Display "me" in the UI but store the actual username
+  const getDisplayValue = (field: FilterField, value: string): string => {
+    if ((field === 'assignee' || field === 'author') && currentUser && value === currentUser) {
+      return 'me';
+    }
+    return value;
+  };
+
+  const resolveValue = (field: FilterField, displayVal: string): string => {
+    if ((field === 'assignee' || field === 'author') && displayVal === 'me' && currentUser) {
+      return currentUser;
+    }
+    return displayVal;
   };
 
   return (
@@ -110,7 +124,7 @@ export function FilterEditor({
               onChange={(e) =>
                 updateFilter(filter.id, { field: e.target.value as FilterField })
               }
-              className={styles.select}
+              className={styles.fieldSelect}
             >
               {FIELD_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -126,7 +140,7 @@ export function FilterEditor({
                   operator: e.target.value as FilterOperator,
                 })
               }
-              className={styles.select}
+              className={styles.operatorSelect}
             >
               {OPERATOR_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -137,9 +151,11 @@ export function FilterEditor({
 
             <FilterValueInput
               field={filter.field}
-              value={filter.value}
+              value={getDisplayValue(filter.field, filter.value)}
               suggestions={getSuggestions(filter.field)}
-              onChange={(value) => updateFilter(filter.id, { value })}
+              onChange={(displayVal) =>
+                updateFilter(filter.id, { value: resolveValue(filter.field, displayVal) })
+              }
             />
 
             <button
@@ -177,12 +193,12 @@ function FilterValueInput({
 }) {
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  if (suggestions.length > 0 && suggestions.length <= 5) {
+  if (suggestions.length > 0 && suggestions.length <= 6) {
     return (
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className={styles.select}
+        className={styles.valueSelect}
       >
         <option value="">Select...</option>
         {suggestions.map((s) => (
