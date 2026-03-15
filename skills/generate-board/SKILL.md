@@ -160,3 +160,19 @@ Each column's `filterCombination` is either `"and"` (all filters must match) or 
 2. Generate a complete, valid JSON configuration
 3. Output the JSON in a single fenced code block so the user can copy it
 4. Tell the user to go to Settings > Import / Export > Paste Configuration and paste the JSON
+
+## Handling unsupported requests
+
+If the user asks for something that is **not possible** with the current filter fields, sort options, or app capabilities listed above (e.g., filtering by reaction count, grouping by project, WIP limits, swimlanes, time-based automations, etc.):
+
+1. **Explain clearly** what they asked for and why it is not currently supported. Be specific about which capability is missing.
+2. **Suggest filing a feature request** by creating an issue on the repository:
+   ```
+   gh issue create --repo eulercb/github-kanban --title "<concise feature title>" --body "<description>"
+   ```
+3. **Help the user write the issue.** Draft both the title and a body that includes:
+   - A clear description of the desired behavior
+   - A concrete use case or example of how they would use it
+   - Any suggestions for how it could work (e.g., new filter field name, UI placement)
+4. Ask the user if they want to submit the issue, and if so, run the `gh issue create` command for them.
+5. After filing (or if the user declines), offer to generate the **best approximation** using the features that *are* available, and explain any trade-offs.
