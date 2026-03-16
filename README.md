@@ -20,7 +20,7 @@ GitHub Kanban Board gives you exactly that:
 
 ### Use the hosted version
 
-Visit the deployed app (if available) and paste a [GitHub Personal Access Token](https://github.com/settings/tokens) with `repo` read access. That's it.
+Open **[eulercb.github.io/github-kanban](https://eulercb.github.io/github-kanban/)**, paste a [GitHub Personal Access Token](https://github.com/settings/tokens) with `repo` read access, and create your first board. Nothing to install.
 
 ### Run locally
 
@@ -31,7 +31,7 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173), enter your GitHub PAT, and create your first board.
+Open [http://localhost:5173](http://localhost:5173), enter your GitHub PAT, and you're ready to go.
 
 ## Features at a Glance
 
@@ -49,6 +49,7 @@ Open [http://localhost:5173](http://localhost:5173), enter your GitHub PAT, and 
 | Import / Export | Move your boards between browsers with a JSON file |
 | Compact card mode | Toggle between detailed and compact card layouts |
 | PR enrichment | See CI status, review decisions, unresolved comments, and unviewed files on PR cards |
+| AI board generation | Use Claude Code to generate board configurations from a natural language description |
 
 ## How It Works
 
@@ -70,6 +71,16 @@ Open [http://localhost:5173](http://localhost:5173), enter your GitHub PAT, and 
 | Storage | localStorage (+ optional Gist sync) |
 
 No external CSS frameworks. No state management libraries. No build-time dependencies beyond what's listed above. The production bundle is under 150 KB gzipped.
+
+## AI-Powered Board Setup
+
+If you use [Claude Code](https://docs.anthropic.com/en/docs/claude-code), you can generate entire board configurations from a plain English description using the built-in `/generate-board` skill:
+
+```
+/generate-board pr-review for my-org/api and my-org/web
+```
+
+Claude will ask about your workflow, generate a complete board config with columns and filters, and give you a JSON you can paste straight into **Settings > Import / Export > Paste Configuration**. It's a fast way to set up complex boards without manually wiring up filter rules one by one.
 
 ## Contributing
 
