@@ -96,6 +96,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     if (!state.token || repos.length === 0 || isRefreshingRef.current) return;
 
     isRefreshingRef.current = true;
+    const isInitialLoad = entities.length === 0;
     setIsLoading(true);
     setProgress(0);
     setError(null);
@@ -103,9 +104,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
     try {
       const repoData = await fetchAllRepoData(
         repos,
-        (partial) => {
-          setEntities(flattenAndSort(partial));
-        },
+        isInitialLoad
+          ? (partial) => { setEntities(flattenAndSort(partial)); }
+          : undefined,
         (completed, total) => {
           setProgress(total > 0 ? completed / total : 0);
         },
