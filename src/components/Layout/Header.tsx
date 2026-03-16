@@ -60,8 +60,8 @@ export function Header() {
                 <img
                   src={state.currentUser.avatar_url}
                   alt={state.currentUser.login}
-                  width={28}
-                  height={28}
+                  width={32}
+                  height={32}
                 />
               </button>
               {showUserMenu && (
