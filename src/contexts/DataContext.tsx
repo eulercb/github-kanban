@@ -47,14 +47,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const ENRICHED_FIELDS: FilterField[] = [
     'review_status', 'ci_status', 'has_unresolved_comments', 'has_unviewed_files',
   ];
-  const filtersNeedEnrichment = activeBoard?.columns.some((col) => {
-    if (col.filterGroups && col.filterGroups.length > 0) {
-      return col.filterGroups.some((g) =>
-        g.filters.some((f) => ENRICHED_FIELDS.includes(f.field))
-      );
-    }
-    return col.filters.some((f) => ENRICHED_FIELDS.includes(f.field));
-  }) ?? false;
+  const filtersNeedEnrichment = activeBoard?.columns.some((col) =>
+    col.filterGroups.some((g) =>
+      g.filters.some((f) => ENRICHED_FIELDS.includes(f.field))
+    )
+  ) ?? false;
   const displayNeedsEnrichment =
     !state.settings.compactCards && state.settings.cardDisplay.showPrStatus;
   const needsEnrichment = filtersNeedEnrichment || displayNeedsEnrichment;

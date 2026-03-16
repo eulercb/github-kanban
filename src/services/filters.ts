@@ -1,7 +1,6 @@
 import type {
   GitHubEntity,
   FilterRule,
-  FilterCombination,
   FilterGroup,
   ColumnConfig,
   SortConfig,
@@ -136,22 +135,6 @@ function matchesRule(entity: GitHubEntity, rule: FilterRule): boolean {
   }
 }
 
-export function filterEntities(
-  entities: GitHubEntity[],
-  filters: FilterRule[],
-  combination: FilterCombination
-): GitHubEntity[] {
-  if (filters.length === 0) return entities;
-
-  return entities.filter((entity) => {
-    if (combination === 'and') {
-      return filters.every((rule) => matchesRule(entity, rule));
-    } else {
-      return filters.some((rule) => matchesRule(entity, rule));
-    }
-  });
-}
-
 function getSortValue(entity: GitHubEntity, field: SortConfig['field']): string | number {
   switch (field) {
     case 'updated':
@@ -206,10 +189,7 @@ export function getColumnEntities(
   allEntities: GitHubEntity[],
   column: ColumnConfig
 ): GitHubEntity[] {
-  const hasGroups = column.filterGroups && column.filterGroups.length > 0;
-  const filtered = hasGroups
-    ? filterByGroups(allEntities, column.filterGroups!)
-    : filterEntities(allEntities, column.filters, column.filterCombination);
+  const filtered = filterByGroups(allEntities, column.filterGroups);
   if (column.sortBy) {
     return sortEntities(filtered, column.sortBy);
   }

@@ -19,34 +19,31 @@ const PRESET_COLUMNS: { name: string; description: string; columns: Omit<ColumnC
     columns: [
       {
         title: 'Assigned to me',
-        filters: [
+        filterGroups: [{ id: '', combination: 'and', filters: [
           { id: '', field: 'type', operator: 'is', value: 'issue' },
           { id: '', field: 'state', operator: 'is', value: 'open' },
           { id: '', field: 'assignee', operator: 'is', value: '{{user}}' },
-        ],
-        filterCombination: 'and',
+        ]}],
         collapsed: false,
         width: 340,
       },
       {
         title: 'My Open Issues',
-        filters: [
+        filterGroups: [{ id: '', combination: 'and', filters: [
           { id: '', field: 'type', operator: 'is', value: 'issue' },
           { id: '', field: 'state', operator: 'is', value: 'open' },
           { id: '', field: 'author', operator: 'is', value: '{{user}}' },
-        ],
-        filterCombination: 'and',
+        ]}],
         collapsed: false,
         width: 340,
       },
       {
         title: 'Issues with PRs',
-        filters: [
+        filterGroups: [{ id: '', combination: 'and', filters: [
           { id: '', field: 'type', operator: 'is', value: 'issue' },
           { id: '', field: 'state', operator: 'is', value: 'open' },
           { id: '', field: 'has_pull_request', operator: 'is', value: 'true' },
-        ],
-        filterCombination: 'and',
+        ]}],
         collapsed: false,
         width: 340,
       },
@@ -58,34 +55,31 @@ const PRESET_COLUMNS: { name: string; description: string; columns: Omit<ColumnC
     columns: [
       {
         title: 'My PRs',
-        filters: [
+        filterGroups: [{ id: '', combination: 'and', filters: [
           { id: '', field: 'type', operator: 'is', value: 'pull_request' },
           { id: '', field: 'state', operator: 'is', value: 'open' },
           { id: '', field: 'author', operator: 'is', value: '{{user}}' },
-        ],
-        filterCombination: 'and',
+        ]}],
         collapsed: false,
         width: 340,
       },
       {
         title: 'Needs Review',
-        filters: [
+        filterGroups: [{ id: '', combination: 'and', filters: [
           { id: '', field: 'type', operator: 'is', value: 'pull_request' },
           { id: '', field: 'state', operator: 'is', value: 'open' },
           { id: '', field: 'review_status', operator: 'is', value: 'pending' },
-        ],
-        filterCombination: 'and',
+        ]}],
         collapsed: false,
         width: 340,
       },
       {
         title: 'Draft PRs',
-        filters: [
+        filterGroups: [{ id: '', combination: 'and', filters: [
           { id: '', field: 'type', operator: 'is', value: 'pull_request' },
           { id: '', field: 'draft', operator: 'is', value: 'true' },
           { id: '', field: 'state', operator: 'is', value: 'open' },
-        ],
-        filterCombination: 'and',
+        ]}],
         collapsed: false,
         width: 340,
       },
@@ -195,10 +189,14 @@ export function BoardSetup({ onSave, onCancel, initialBoard }: Props) {
       columns = (preset?.columns ?? []).map((col) => ({
         ...col,
         id: generateId(),
-        filters: col.filters.map((f) => ({
-          ...f,
+        filterGroups: col.filterGroups.map((g) => ({
+          ...g,
           id: generateId(),
-          value: f.value === '{{user}}' ? userLogin : f.value,
+          filters: g.filters.map((f) => ({
+            ...f,
+            id: generateId(),
+            value: f.value === '{{user}}' ? userLogin : f.value,
+          })),
         })),
       }));
     }
