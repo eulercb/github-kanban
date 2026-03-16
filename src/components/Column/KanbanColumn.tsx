@@ -2,7 +2,6 @@ import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { ColumnConfig, FilterGroup, SortConfig, SortField } from '../../types';
-import { generateId } from '../../utils/id';
 import { useApp } from '../../contexts/AppContext';
 import { useData } from '../../contexts/DataContext';
 import { getColumnEntities } from '../../services/filters';
@@ -101,18 +100,6 @@ export function KanbanColumn({
     const newColumns = board.columns.filter((c) => c.id !== column.id);
     updateBoard({ ...board, columns: newColumns });
   };
-
-  // Build groups from column config, migrating flat filters if needed
-  const filterGroups: FilterGroup[] = useMemo(() => {
-    if (column.filterGroups && column.filterGroups.length > 0) {
-      return column.filterGroups;
-    }
-    return [{
-      id: generateId(),
-      filters: column.filters.length > 0 ? column.filters : [],
-      combination: column.filterCombination,
-    }];
-  }, [column.filterGroups, column.filters, column.filterCombination]);
 
   const handleGroupsChange = (groups: FilterGroup[]) => {
     updateColumn({ filterGroups: groups });
@@ -323,7 +310,7 @@ export function KanbanColumn({
       {showFilters && (
         <div className={styles.filterPanel} data-filter-panel>
           <FilterEditor
-            groups={filterGroups}
+            groups={column.filterGroups}
             onGroupsChange={handleGroupsChange}
             currentUser={state.currentUser?.login}
             repos={board.repos}
@@ -334,7 +321,7 @@ export function KanbanColumn({
       <div className={styles.cards}>
         {filteredEntities.length === 0 ? (
           <div className={styles.empty}>
-            {column.filters.length === 0
+            {column.filterGroups.every((g) => g.filters.length === 0)
               ? 'Add filters to see items'
               : 'No items match filters'}
           </div>

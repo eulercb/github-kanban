@@ -143,9 +143,7 @@ export interface SortConfig {
 export interface ColumnConfig {
   id: string;
   title: string;
-  filters: FilterRule[];
-  filterCombination: FilterCombination;
-  filterGroups?: FilterGroup[];
+  filterGroups: FilterGroup[];
   collapsed: boolean;
   width: number; // px
   sortBy?: SortConfig;

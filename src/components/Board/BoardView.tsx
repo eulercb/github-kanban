@@ -68,8 +68,7 @@ export function BoardView() {
     const newColumn: ColumnConfig = {
       id: newId,
       title: 'New Column',
-      filters: [],
-      filterCombination: 'and',
+      filterGroups: [{ id: generateId(), filters: [], combination: 'and' }],
       collapsed: false,
       width: 340,
     };
