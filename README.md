@@ -88,4 +88,4 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for the develo
 
 ## License
 
-This is a hobby project built to scratch an itch. Use it, fork it, improve it.
+This project is licensed under the [GNU Affero General Public License v3.0](LICENSE). In short: you're free to use, modify, and distribute this software, but any modified version you host as a service must also be open-sourced under the same license.
