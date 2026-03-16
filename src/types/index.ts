@@ -116,6 +116,12 @@ export interface FilterRule {
 
 export type FilterCombination = 'and' | 'or';
 
+export interface FilterGroup {
+  id: string;
+  filters: FilterRule[];
+  combination: FilterCombination;
+}
+
 // Sort types
 
 export type SortField =
@@ -139,6 +145,7 @@ export interface ColumnConfig {
   title: string;
   filters: FilterRule[];
   filterCombination: FilterCombination;
+  filterGroups?: FilterGroup[];
   collapsed: boolean;
   width: number; // px
   sortBy?: SortConfig;

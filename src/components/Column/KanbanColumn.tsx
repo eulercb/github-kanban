@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import type { ColumnConfig, FilterRule, FilterCombination, SortConfig, SortField } from '../../types';
+import type { ColumnConfig, FilterGroup, SortConfig, SortField } from '../../types';
+import { generateId } from '../../utils/id';
 import { useApp } from '../../contexts/AppContext';
 import { useData } from '../../contexts/DataContext';
 import { getColumnEntities } from '../../services/filters';
@@ -101,12 +102,20 @@ export function KanbanColumn({
     updateBoard({ ...board, columns: newColumns });
   };
 
-  const handleFiltersChange = (filters: FilterRule[]) => {
-    updateColumn({ filters });
-  };
+  // Build groups from column config, migrating flat filters if needed
+  const filterGroups: FilterGroup[] = useMemo(() => {
+    if (column.filterGroups && column.filterGroups.length > 0) {
+      return column.filterGroups;
+    }
+    return [{
+      id: generateId(),
+      filters: column.filters.length > 0 ? column.filters : [],
+      combination: column.filterCombination,
+    }];
+  }, [column.filterGroups, column.filters, column.filterCombination]);
 
-  const handleCombinationChange = (filterCombination: FilterCombination) => {
-    updateColumn({ filterCombination });
+  const handleGroupsChange = (groups: FilterGroup[]) => {
+    updateColumn({ filterGroups: groups });
   };
 
   const handleSortChange = (field: SortField) => {
@@ -314,10 +323,8 @@ export function KanbanColumn({
       {showFilters && (
         <div className={styles.filterPanel} data-filter-panel>
           <FilterEditor
-            filters={column.filters}
-            combination={column.filterCombination}
-            onFiltersChange={handleFiltersChange}
-            onCombinationChange={handleCombinationChange}
+            groups={filterGroups}
+            onGroupsChange={handleGroupsChange}
             currentUser={state.currentUser?.login}
             repos={board.repos}
           />

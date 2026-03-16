@@ -4,6 +4,63 @@
   gap: 8px;
 }
 
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+}
+
+.groupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 0;
+}
+
+.groupSeparator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+.groupSeparatorLine {
+  flex: 1;
+  height: 1px;
+  background: var(--border-default);
+}
+
+.groupSeparatorLabel {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.removeGroupBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.removeGroupBtn:hover {
+  background: color-mix(in srgb, var(--accent-danger) 10%, transparent);
+  color: var(--accent-danger);
+}
+
 .combinationToggle {
   display: flex;
   align-items: center;
@@ -166,6 +223,25 @@
 }
 
 .addBtn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.addGroupBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border: 1px dashed var(--border-muted);
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  transition: all var(--transition-speed);
+  align-self: flex-start;
+}
+
+.addGroupBtn:hover {
   border-color: var(--accent-primary);
   color: var(--accent-primary);
 }

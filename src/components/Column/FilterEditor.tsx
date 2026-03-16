@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { FilterRule, FilterField, FilterOperator, FilterCombination } from '../../types';
+import type { FilterRule, FilterField, FilterOperator, FilterCombination, FilterGroup } from '../../types';
 import { generateId } from '../../utils/id';
 import styles from './FilterEditor.module.css';
 
@@ -39,43 +39,75 @@ const VALUE_SUGGESTIONS: Partial<Record<FilterField, string[]>> = {
   has_pull_request: ['true', 'false'],
 };
 
+function createGroup(filters?: FilterRule[], combination?: FilterCombination): FilterGroup {
+  return {
+    id: generateId(),
+    filters: filters ?? [],
+    combination: combination ?? 'and',
+  };
+}
+
 interface Props {
-  filters: FilterRule[];
-  combination: FilterCombination;
-  onFiltersChange: (filters: FilterRule[]) => void;
-  onCombinationChange: (combination: FilterCombination) => void;
+  groups: FilterGroup[];
+  onGroupsChange: (groups: FilterGroup[]) => void;
   currentUser?: string;
   repos?: string[];
 }
 
 export function FilterEditor({
-  filters,
-  combination,
-  onFiltersChange,
-  onCombinationChange,
+  groups,
+  onGroupsChange,
   currentUser,
   repos,
 }: Props) {
-  const addFilter = () => {
-    onFiltersChange([
-      ...filters,
-      {
-        id: generateId(),
-        field: 'state',
-        operator: 'is',
-        value: 'open',
-      },
-    ]);
-  };
-
-  const updateFilter = (id: string, updates: Partial<FilterRule>) => {
-    onFiltersChange(
-      filters.map((f) => (f.id === id ? { ...f, ...updates } : f))
+  const updateGroup = (groupId: string, updates: Partial<FilterGroup>) => {
+    onGroupsChange(
+      groups.map((g) => (g.id === groupId ? { ...g, ...updates } : g))
     );
   };
 
-  const removeFilter = (id: string) => {
-    onFiltersChange(filters.filter((f) => f.id !== id));
+  const removeGroup = (groupId: string) => {
+    onGroupsChange(groups.filter((g) => g.id !== groupId));
+  };
+
+  const addGroup = () => {
+    onGroupsChange([...groups, createGroup()]);
+  };
+
+  const addFilterToGroup = (groupId: string) => {
+    onGroupsChange(
+      groups.map((g) =>
+        g.id === groupId
+          ? {
+              ...g,
+              filters: [
+                ...g.filters,
+                { id: generateId(), field: 'state' as FilterField, operator: 'is' as FilterOperator, value: 'open' },
+              ],
+            }
+          : g
+      )
+    );
+  };
+
+  const updateFilterInGroup = (groupId: string, filterId: string, updates: Partial<FilterRule>) => {
+    onGroupsChange(
+      groups.map((g) =>
+        g.id === groupId
+          ? { ...g, filters: g.filters.map((f) => (f.id === filterId ? { ...f, ...updates } : f)) }
+          : g
+      )
+    );
+  };
+
+  const removeFilterFromGroup = (groupId: string, filterId: string) => {
+    onGroupsChange(
+      groups.map((g) =>
+        g.id === groupId
+          ? { ...g, filters: g.filters.filter((f) => f.id !== filterId) }
+          : g
+      )
+    );
   };
 
   const getSuggestions = (field: FilterField): string[] => {
@@ -83,16 +115,12 @@ export function FilterEditor({
       return repos;
     }
     const base = VALUE_SUGGESTIONS[field] ?? [];
-    if (
-      (field === 'assignee' || field === 'author') &&
-      currentUser
-    ) {
+    if ((field === 'assignee' || field === 'author') && currentUser) {
       return ['me', ...base];
     }
     return base;
   };
 
-  // Display "me" in the UI but store the actual username
   const getDisplayValue = (field: FilterField, value: string): string => {
     if ((field === 'assignee' || field === 'author') && currentUser && value === currentUser) {
       return 'me';
@@ -109,85 +137,115 @@ export function FilterEditor({
 
   return (
     <div className={styles.editor}>
-      {filters.length > 1 && (
-        <div className={styles.combinationToggle}>
-          <span>Match</span>
-          <button
-            className={`${styles.toggleBtn} ${combination === 'and' ? styles.active : ''}`}
-            onClick={() => onCombinationChange('and')}
-          >
-            All
-          </button>
-          <button
-            className={`${styles.toggleBtn} ${combination === 'or' ? styles.active : ''}`}
-            onClick={() => onCombinationChange('or')}
-          >
-            Any
-          </button>
-          <span>filters</span>
-        </div>
-      )}
+      {groups.map((group, groupIdx) => (
+        <div key={group.id}>
+          {groupIdx > 0 && (
+            <div className={styles.groupSeparator}>
+              <span className={styles.groupSeparatorLine} />
+              <span className={styles.groupSeparatorLabel}>OR</span>
+              <span className={styles.groupSeparatorLine} />
+            </div>
+          )}
+          <div className={groups.length > 1 ? styles.group : undefined}>
+            <div className={styles.groupHeader}>
+              {group.filters.length > 1 && (
+                <div className={styles.combinationToggle}>
+                  <span>Match</span>
+                  <button
+                    className={`${styles.toggleBtn} ${group.combination === 'and' ? styles.active : ''}`}
+                    onClick={() => updateGroup(group.id, { combination: 'and' })}
+                  >
+                    All
+                  </button>
+                  <button
+                    className={`${styles.toggleBtn} ${group.combination === 'or' ? styles.active : ''}`}
+                    onClick={() => updateGroup(group.id, { combination: 'or' })}
+                  >
+                    Any
+                  </button>
+                </div>
+              )}
+              {groups.length > 1 && (
+                <button
+                  className={styles.removeGroupBtn}
+                  onClick={() => removeGroup(group.id)}
+                  title="Remove group"
+                >
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L9.06 8l3.22 3.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L8 9.06l-3.22 3.22a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z" />
+                  </svg>
+                </button>
+              )}
+            </div>
 
-      <div className={styles.rules}>
-        {filters.map((filter) => (
-          <div key={filter.id} className={styles.rule}>
-            <select
-              value={filter.field}
-              onChange={(e) =>
-                updateFilter(filter.id, { field: e.target.value as FilterField })
-              }
-              className={styles.fieldSelect}
-            >
-              {FIELD_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
+            <div className={styles.rules}>
+              {group.filters.map((filter) => (
+                <div key={filter.id} className={styles.rule}>
+                  <select
+                    value={filter.field}
+                    onChange={(e) =>
+                      updateFilterInGroup(group.id, filter.id, { field: e.target.value as FilterField })
+                    }
+                    className={styles.fieldSelect}
+                  >
+                    {FIELD_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={filter.operator}
+                    onChange={(e) =>
+                      updateFilterInGroup(group.id, filter.id, { operator: e.target.value as FilterOperator })
+                    }
+                    className={styles.operatorSelect}
+                  >
+                    {OPERATOR_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+
+                  <FilterValueInput
+                    field={filter.field}
+                    value={getDisplayValue(filter.field, filter.value)}
+                    suggestions={getSuggestions(filter.field)}
+                    onChange={(displayVal) =>
+                      updateFilterInGroup(group.id, filter.id, { value: resolveValue(filter.field, displayVal) })
+                    }
+                  />
+
+                  <button
+                    className={styles.removeBtn}
+                    onClick={() => removeFilterFromGroup(group.id, filter.id)}
+                    title="Remove filter"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                      <path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L9.06 8l3.22 3.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L8 9.06l-3.22 3.22a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z" />
+                    </svg>
+                  </button>
+                </div>
               ))}
-            </select>
+            </div>
 
-            <select
-              value={filter.operator}
-              onChange={(e) =>
-                updateFilter(filter.id, {
-                  operator: e.target.value as FilterOperator,
-                })
-              }
-              className={styles.operatorSelect}
-            >
-              {OPERATOR_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-
-            <FilterValueInput
-              field={filter.field}
-              value={getDisplayValue(filter.field, filter.value)}
-              suggestions={getSuggestions(filter.field)}
-              onChange={(displayVal) =>
-                updateFilter(filter.id, { value: resolveValue(filter.field, displayVal) })
-              }
-            />
-
-            <button
-              className={styles.removeBtn}
-              onClick={() => removeFilter(filter.id)}
-              title="Remove filter"
-            >
+            <button className={styles.addBtn} onClick={() => addFilterToGroup(group.id)}>
               <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
-                <path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L9.06 8l3.22 3.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L8 9.06l-3.22 3.22a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z" />
+                <path d="M7.75 2a.75.75 0 0 1 .75.75V7h4.25a.75.75 0 0 1 0 1.5H8.5v4.25a.75.75 0 0 1-1.5 0V8.5H2.75a.75.75 0 0 1 0-1.5H7V2.75A.75.75 0 0 1 7.75 2Z" />
               </svg>
+              Add filter
             </button>
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
 
-      <button className={styles.addBtn} onClick={addFilter}>
+      <button className={styles.addGroupBtn} onClick={addGroup}>
         <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
           <path d="M7.75 2a.75.75 0 0 1 .75.75V7h4.25a.75.75 0 0 1 0 1.5H8.5v4.25a.75.75 0 0 1-1.5 0V8.5H2.75a.75.75 0 0 1 0-1.5H7V2.75A.75.75 0 0 1 7.75 2Z" />
         </svg>
-        Add filter
+        Add OR group
       </button>
     </div>
   );

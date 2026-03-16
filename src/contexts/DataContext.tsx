@@ -36,6 +36,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const refreshTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isRefreshingRef = useRef(false);
+  const hasLoadedRef = useRef(false);
 
   const activeBoard = state.boards.find((b) => b.id === state.activeBoardId);
   const repos = activeBoard?.repos ?? [];
@@ -46,9 +47,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const ENRICHED_FIELDS: FilterField[] = [
     'review_status', 'ci_status', 'has_unresolved_comments', 'has_unviewed_files',
   ];
-  const filtersNeedEnrichment = activeBoard?.columns.some((col) =>
-    col.filters.some((f) => ENRICHED_FIELDS.includes(f.field))
-  ) ?? false;
+  const filtersNeedEnrichment = activeBoard?.columns.some((col) => {
+    if (col.filterGroups && col.filterGroups.length > 0) {
+      return col.filterGroups.some((g) =>
+        g.filters.some((f) => ENRICHED_FIELDS.includes(f.field))
+      );
+    }
+    return col.filters.some((f) => ENRICHED_FIELDS.includes(f.field));
+  }) ?? false;
   const displayNeedsEnrichment =
     !state.settings.compactCards && state.settings.cardDisplay.showPrStatus;
   const needsEnrichment = filtersNeedEnrichment || displayNeedsEnrichment;
@@ -96,7 +102,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     if (!state.token || repos.length === 0 || isRefreshingRef.current) return;
 
     isRefreshingRef.current = true;
-    const isInitialLoad = entities.length === 0;
+    const isInitialLoad = !hasLoadedRef.current;
     setIsLoading(true);
     setProgress(0);
     setError(null);
@@ -115,6 +121,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
       setEntities(flattenAndSort(repoData));
       setLastRefresh(new Date());
+      hasLoadedRef.current = true;
       syncGistIfNeeded();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch data');
@@ -127,9 +134,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
   // Initial fetch when repos change
   useEffect(() => {
     if (state.token && repos.length > 0) {
+      hasLoadedRef.current = false;
       refresh();
     } else {
       setEntities([]);
+      hasLoadedRef.current = false;
     }
   }, [state.token, reposKey]);
 
