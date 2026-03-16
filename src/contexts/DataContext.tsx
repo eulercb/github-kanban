@@ -161,9 +161,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
     const handleVisibility = () => {
       if (!document.hidden && lastRefresh) {
-        // Only refresh if at least 30 seconds since last refresh
+        const thresholdMs = state.settings.autoRefreshInterval * 60 * 1000;
         const elapsed = Date.now() - lastRefresh.getTime();
-        if (elapsed > 30000) {
+        if (elapsed > thresholdMs) {
           refresh();
         }
       }
@@ -173,7 +173,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, [state.settings.refreshOnFocus, state.token, reposKey, lastRefresh, refresh]);
+  }, [state.settings.refreshOnFocus, state.settings.autoRefreshInterval, state.token, reposKey, lastRefresh, refresh]);
 
   return (
     <DataContext.Provider
