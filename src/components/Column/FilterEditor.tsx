@@ -45,6 +45,7 @@ interface Props {
   onFiltersChange: (filters: FilterRule[]) => void;
   onCombinationChange: (combination: FilterCombination) => void;
   currentUser?: string;
+  repos?: string[];
 }
 
 export function FilterEditor({
@@ -53,6 +54,7 @@ export function FilterEditor({
   onFiltersChange,
   onCombinationChange,
   currentUser,
+  repos,
 }: Props) {
   const addFilter = () => {
     onFiltersChange([
@@ -77,6 +79,9 @@ export function FilterEditor({
   };
 
   const getSuggestions = (field: FilterField): string[] => {
+    if (field === 'repo' && repos && repos.length > 0) {
+      return repos;
+    }
     const base = VALUE_SUGGESTIONS[field] ?? [];
     if (
       (field === 'assignee' || field === 'author') &&

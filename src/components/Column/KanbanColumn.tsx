@@ -319,6 +319,7 @@ export function KanbanColumn({
             onFiltersChange={handleFiltersChange}
             onCombinationChange={handleCombinationChange}
             currentUser={state.currentUser?.login}
+            repos={board.repos}
           />
         </div>
       )}
