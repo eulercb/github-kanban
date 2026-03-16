@@ -7,7 +7,7 @@ import {
   useRef,
   type ReactNode,
 } from 'react';
-import type { GitHubEntity } from '../types';
+import type { GitHubEntity, FilterField } from '../types';
 import { fetchAllRepoData, saveConfigToGist } from '../services/github';
 import { useApp } from './AppContext';
 import {
@@ -41,6 +41,17 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const repos = activeBoard?.repos ?? [];
   const reposKey = repos.join(',');
   const isSyncingGistRef = useRef(false);
+
+  // Determine if GraphQL enrichment is needed based on current settings and filters
+  const ENRICHED_FIELDS: FilterField[] = [
+    'review_status', 'ci_status', 'has_unresolved_comments', 'has_unviewed_files',
+  ];
+  const filtersNeedEnrichment = activeBoard?.columns.some((col) =>
+    col.filters.some((f) => ENRICHED_FIELDS.includes(f.field))
+  ) ?? false;
+  const displayNeedsEnrichment =
+    !state.settings.compactCards && state.settings.cardDisplay.showPrStatus;
+  const needsEnrichment = filtersNeedEnrichment || displayNeedsEnrichment;
 
   const syncGistIfNeeded = useCallback(() => {
     if (!state.gistId || isSyncingGistRef.current) return;
@@ -98,6 +109,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         (completed, total) => {
           setProgress(total > 0 ? completed / total : 0);
         },
+        !needsEnrichment,
       );
 
       setEntities(flattenAndSort(repoData));
@@ -109,7 +121,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
       isRefreshingRef.current = false;
     }
-  }, [state.token, reposKey, syncGistIfNeeded, flattenAndSort]);
+  }, [state.token, reposKey, needsEnrichment, syncGistIfNeeded, flattenAndSort]);
 
   // Initial fetch when repos change
   useEffect(() => {
