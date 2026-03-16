@@ -18,8 +18,9 @@ function getEntityType(entity: GitHubEntity): string {
 }
 
 function getEntityState(entity: GitHubEntity): string {
-  if (isPullRequest(entity) && entity.merged_at) {
-    return 'merged';
+  if (isPullRequest(entity)) {
+    if (entity.merged_at) return 'merged';
+    if (entity.draft && entity.state === 'open') return 'draft';
   }
   return entity.state;
 }

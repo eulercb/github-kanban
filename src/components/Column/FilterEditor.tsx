@@ -30,7 +30,7 @@ const OPERATOR_OPTIONS: { value: FilterOperator; label: string }[] = [
 
 const VALUE_SUGGESTIONS: Partial<Record<FilterField, string[]>> = {
   type: ['issue', 'pull_request'],
-  state: ['open', 'closed', 'merged'],
+  state: ['open', 'closed', 'merged', 'draft'],
   draft: ['true', 'false'],
   review_status: ['approved', 'changes_requested', 'review_required', 'none'],
   ci_status: ['success', 'failure', 'pending', 'none'],
