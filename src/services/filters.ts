@@ -2,6 +2,7 @@ import type {
   GitHubEntity,
   FilterRule,
   FilterCombination,
+  FilterGroup,
   ColumnConfig,
   SortConfig,
 } from '../types';
@@ -186,11 +187,29 @@ export function sortEntities(
   return sorted;
 }
 
+function filterByGroups(
+  entities: GitHubEntity[],
+  groups: FilterGroup[],
+): GitHubEntity[] {
+  // Groups are OR'd together: an entity matches if it matches ANY group
+  return entities.filter((entity) =>
+    groups.some((group) => {
+      if (group.filters.length === 0) return true;
+      return group.combination === 'and'
+        ? group.filters.every((rule) => matchesRule(entity, rule))
+        : group.filters.some((rule) => matchesRule(entity, rule));
+    })
+  );
+}
+
 export function getColumnEntities(
   allEntities: GitHubEntity[],
   column: ColumnConfig
 ): GitHubEntity[] {
-  const filtered = filterEntities(allEntities, column.filters, column.filterCombination);
+  const hasGroups = column.filterGroups && column.filterGroups.length > 0;
+  const filtered = hasGroups
+    ? filterByGroups(allEntities, column.filterGroups!)
+    : filterEntities(allEntities, column.filters, column.filterCombination);
   if (column.sortBy) {
     return sortEntities(filtered, column.sortBy);
   }
