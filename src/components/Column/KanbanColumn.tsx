@@ -332,7 +332,7 @@ export function KanbanColumn({
           </div>
         ) : (
           filteredEntities.map((entity) => (
-            <EntityCard key={`${entity.id}-${entity.html_url}`} entity={entity} />
+            <EntityCard key={`${entity.id}-${entity.html_url}`} entity={entity} columnId={column.id} />
           ))
         )}
       </div>

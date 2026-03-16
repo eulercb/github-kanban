@@ -6,6 +6,7 @@ import styles from './EntityCard.module.css';
 
 interface Props {
   entity: GitHubEntity;
+  columnId?: string;
 }
 
 function getEntityRepo(entity: GitHubEntity): string {
@@ -159,7 +160,7 @@ export function entityKey(entity: GitHubEntity): string {
   return `${entity.id}-${entity.html_url}`;
 }
 
-export function EntityCard({ entity }: Props) {
+export function EntityCard({ entity, columnId }: Props) {
   const { state } = useApp();
   const compact = state.settings.compactCards;
   const d = state.settings.cardDisplay;
@@ -178,7 +179,7 @@ export function EntityCard({ entity }: Props) {
       target="_blank"
       rel="noopener noreferrer"
       className={`${styles.card} ${compact ? styles.compact : ''}`}
-      data-entity-key={entityKey(entity)}
+      data-entity-key={columnId ? `${columnId}:${entityKey(entity)}` : entityKey(entity)}
     >
       <div className={styles.header}>
         <StateIcon entity={entity} />
