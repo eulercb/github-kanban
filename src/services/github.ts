@@ -387,8 +387,9 @@ const GIST_FILENAME = 'github-kanban-config.json';
 export async function checkGistScope(): Promise<boolean> {
   const kit = getOctokit();
   try {
-    await kit.rest.gists.list({ per_page: 1 });
-    return true;
+    const response = await kit.rest.gists.list({ per_page: 1 });
+    const scopes = response.headers['x-oauth-scopes'] ?? '';
+    return scopes.split(',').map(s => s.trim()).includes('gist');
   } catch {
     return false;
   }
