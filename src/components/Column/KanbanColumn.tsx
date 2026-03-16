@@ -208,6 +208,7 @@ export function KanbanColumn({
               onChange={(e) => setEditTitle(e.target.value)}
               onBlur={handleTitleSubmit}
               onKeyDown={(e) => {
+                e.stopPropagation();
                 if (e.key === 'Enter') handleTitleSubmit();
                 if (e.key === 'Escape') setIsEditing(false);
               }}
