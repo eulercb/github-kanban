@@ -14,11 +14,12 @@ import {
   horizontalListSortingStrategy,
   arrayMove,
 } from '@dnd-kit/sortable';
-import { useApp } from '../../contexts/AppContext';
-import { useData } from '../../contexts/DataContext';
+import { useApp } from '../../hooks/useApp';
+import { useData } from '../../hooks/useData';
 import { useCardAnimations } from '../../hooks/useCardAnimations';
 import { KanbanColumn } from '../Column/KanbanColumn';
-import { EntityCard, entityKey } from '../Card/EntityCard';
+import { EntityCard } from '../Card/EntityCard';
+import { entityKey } from '../../utils/entityKey';
 import { BoardSetup } from './BoardSetup';
 import { generateId } from '../../utils/id';
 import type { ColumnConfig, BoardConfig } from '../../types';

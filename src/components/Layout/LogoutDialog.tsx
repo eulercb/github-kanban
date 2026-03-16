@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useApp } from '../../contexts/AppContext';
+import { useApp } from '../../hooks/useApp';
 import { exportSettings } from '../../utils/export';
 import { saveConfigToGist } from '../../services/github';
 import { computeConfigHash, getGistSyncHash, setGistSyncHash } from '../../utils/storage';

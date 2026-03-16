@@ -2,8 +2,8 @@ import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { ColumnConfig, FilterGroup, SortConfig, SortField } from '../../types';
-import { useApp } from '../../contexts/AppContext';
-import { useData } from '../../contexts/DataContext';
+import { useApp } from '../../hooks/useApp';
+import { useData } from '../../hooks/useData';
 import { getColumnEntities } from '../../services/filters';
 import { EntityCard } from '../Card/EntityCard';
 import { FilterEditor } from './FilterEditor';
@@ -47,13 +47,17 @@ export function KanbanColumn({
   const board = state.boards.find((b) => b.id === boardId)!;
 
   // Auto-edit when a new column is created
+  const autoEditHandledRef = useRef(false);
   useEffect(() => {
-    if (autoEdit) {
-      setEditTitle(column.title);
-      setIsEditing(true);
-      onAutoEditDone?.();
+    if (autoEdit && !autoEditHandledRef.current) {
+      autoEditHandledRef.current = true;
+      requestAnimationFrame(() => {
+        setEditTitle(column.title);
+        setIsEditing(true);
+        onAutoEditDone?.();
+      });
     }
-  }, [autoEdit]);
+  }, [autoEdit, column.title, onAutoEditDone]);
 
   const {
     attributes,
