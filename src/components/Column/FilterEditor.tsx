@@ -29,15 +29,50 @@ const OPERATOR_OPTIONS: { value: FilterOperator; label: string }[] = [
   { value: 'not_contains', label: 'does not contain' },
 ];
 
-const VALUE_SUGGESTIONS: Partial<Record<FilterField, string[]>> = {
-  type: ['issue', 'pull_request'],
-  state: ['open', 'closed', 'merged', 'draft'],
-  draft: ['true', 'false'],
-  review_status: ['approved', 'changes_requested', 'review_required', 'none'],
-  ci_status: ['success', 'failure', 'pending', 'none'],
-  has_unresolved_comments: ['true', 'false'],
-  has_unviewed_files: ['true', 'false'],
-  has_pull_request: ['true', 'false'],
+interface ValueOption {
+  value: string;
+  label: string;
+}
+
+const VALUE_SUGGESTIONS: Partial<Record<FilterField, ValueOption[]>> = {
+  type: [
+    { value: 'issue', label: 'Issue' },
+    { value: 'pull_request', label: 'Pull Request' },
+  ],
+  state: [
+    { value: 'open', label: 'Open' },
+    { value: 'closed', label: 'Closed' },
+    { value: 'merged', label: 'Merged' },
+    { value: 'draft', label: 'Draft' },
+  ],
+  draft: [
+    { value: 'true', label: 'Yes' },
+    { value: 'false', label: 'No' },
+  ],
+  review_status: [
+    { value: 'approved', label: 'Approved' },
+    { value: 'changes_requested', label: 'Changes Requested' },
+    { value: 'review_required', label: 'Review Required' },
+    { value: 'none', label: 'None' },
+  ],
+  ci_status: [
+    { value: 'success', label: 'Success' },
+    { value: 'failure', label: 'Failure' },
+    { value: 'pending', label: 'Pending' },
+    { value: 'none', label: 'None' },
+  ],
+  has_unresolved_comments: [
+    { value: 'true', label: 'Yes' },
+    { value: 'false', label: 'No' },
+  ],
+  has_unviewed_files: [
+    { value: 'true', label: 'Yes' },
+    { value: 'false', label: 'No' },
+  ],
+  has_pull_request: [
+    { value: 'true', label: 'Yes' },
+    { value: 'false', label: 'No' },
+  ],
 };
 
 function createGroup(filters?: FilterRule[], combination?: FilterCombination): FilterGroup {
@@ -111,13 +146,13 @@ export function FilterEditor({
     );
   };
 
-  const getSuggestions = (field: FilterField): string[] => {
+  const getSuggestions = (field: FilterField): ValueOption[] => {
     if (field === 'repo' && repos && repos.length > 0) {
-      return repos;
+      return repos.map((r) => ({ value: r, label: r }));
     }
     const base = VALUE_SUGGESTIONS[field] ?? [];
     if ((field === 'assignee' || field === 'author' || field === 'reviewer') && currentUser) {
-      return ['me', ...base];
+      return [{ value: 'me', label: 'me' }, ...base];
     }
     return base;
   };
@@ -125,6 +160,11 @@ export function FilterEditor({
   const getDisplayValue = (field: FilterField, value: string): string => {
     if ((field === 'assignee' || field === 'author' || field === 'reviewer') && currentUser && value === currentUser) {
       return 'me';
+    }
+    const suggestions = VALUE_SUGGESTIONS[field];
+    if (suggestions) {
+      const match = suggestions.find((s) => s.value === value);
+      if (match) return match.label;
     }
     return value;
   };
@@ -212,10 +252,11 @@ export function FilterEditor({
 
                   <FilterValueInput
                     field={filter.field}
-                    value={getDisplayValue(filter.field, filter.value)}
+                    value={filter.value}
+                    displayValue={getDisplayValue(filter.field, filter.value)}
                     suggestions={getSuggestions(filter.field)}
-                    onChange={(displayVal) =>
-                      updateFilterInGroup(group.id, filter.id, { value: resolveValue(filter.field, displayVal) })
+                    onChange={(val) =>
+                      updateFilterInGroup(group.id, filter.id, { value: resolveValue(filter.field, val) })
                     }
                   />
 
@@ -254,12 +295,14 @@ export function FilterEditor({
 
 function FilterValueInput({
   value,
+  displayValue,
   suggestions,
   onChange,
 }: {
   field: FilterField;
   value: string;
-  suggestions: string[];
+  displayValue: string;
+  suggestions: ValueOption[];
   onChange: (value: string) => void;
 }) {
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -273,8 +316,8 @@ function FilterValueInput({
       >
         <option value="">Select...</option>
         {suggestions.map((s) => (
-          <option key={s} value={s}>
-            {s}
+          <option key={s.value} value={s.value}>
+            {s.label}
           </option>
         ))}
       </select>
@@ -285,7 +328,7 @@ function FilterValueInput({
     <div className={styles.inputWrapper}>
       <input
         type="text"
-        value={value}
+        value={displayValue}
         onChange={(e) => onChange(e.target.value)}
         onFocus={() => setShowSuggestions(true)}
         onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
@@ -295,14 +338,14 @@ function FilterValueInput({
       {showSuggestions && suggestions.length > 0 && (
         <div className={styles.suggestions}>
           {suggestions
-            .filter((s) => s.toLowerCase().includes(value.toLowerCase()))
+            .filter((s) => s.label.toLowerCase().includes(displayValue.toLowerCase()) || s.value.toLowerCase().includes(displayValue.toLowerCase()))
             .map((s) => (
               <button
-                key={s}
+                key={s.value}
                 className={styles.suggestion}
-                onMouseDown={() => onChange(s)}
+                onMouseDown={() => onChange(s.value)}
               >
-                {s}
+                {s.label}
               </button>
             ))}
         </div>
