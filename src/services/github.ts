@@ -312,10 +312,11 @@ export async function fetchAllRepoData(
   repos: string[],
   onRepoComplete?: (result: Map<string, RepoData>) => void,
   onProgress?: (completed: number, total: number) => void,
+  skipEnrichment?: boolean,
 ): Promise<Map<string, RepoData>> {
   const result = new Map<string, RepoData>();
-  // Each repo has 2 steps: REST fetch + GraphQL enrichment
-  const totalSteps = repos.length * 2;
+  const stepsPerRepo = skipEnrichment ? 1 : 2;
+  const totalSteps = repos.length * stepsPerRepo;
   let completedSteps = 0;
 
   await Promise.all(
@@ -331,17 +332,18 @@ export async function fetchAllRepoData(
       // Filter out issues that are actually PRs (GitHub API returns PRs in issues endpoint)
       const realIssues = issues.filter((i) => !i.pull_request);
 
-      // Show REST data immediately, before GraphQL enrichment
       result.set(repoFullName, { issues: realIssues, pullRequests });
       onRepoComplete?.(result);
       completedSteps++;
       onProgress?.(completedSteps, totalSteps);
 
-      // Enrich PRs with review/CI/thread data via GraphQL
-      await enrichPullRequests(owner, repo, pullRequests);
-      onRepoComplete?.(result);
-      completedSteps++;
-      onProgress?.(completedSteps, totalSteps);
+      if (!skipEnrichment) {
+        // Enrich PRs with review/CI/thread data via GraphQL
+        await enrichPullRequests(owner, repo, pullRequests);
+        onRepoComplete?.(result);
+        completedSteps++;
+        onProgress?.(completedSteps, totalSteps);
+      }
     })
   );
 
