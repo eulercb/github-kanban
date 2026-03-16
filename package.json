@@ -1,7 +1,20 @@
 {
   "name": "github-kanban",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "A lightweight, privacy-first Kanban board for GitHub issues and pull requests. Multi-repo, filterable columns, drag-and-drop — runs entirely in the browser.",
+  "keywords": [
+    "github",
+    "kanban",
+    "board",
+    "issues",
+    "pull-requests",
+    "project-management",
+    "developer-tools",
+    "react",
+    "typescript",
+    "vite"
+  ],
   "type": "module",
   "scripts": {
     "dev": "vite",
