@@ -100,6 +100,7 @@ export type FilterField =
   | 'repo'           // owner/repo
   | 'org'            // repository owner / organisation
   | 'draft'          // true/false
+  | 'reviewer'       // user login (from requested_reviewers)
   | 'review_status'  // approved, changes_requested, review_required, pending, none
   | 'ci_status'      // success, failure, pending, none
   | 'has_unresolved_comments' // true/false

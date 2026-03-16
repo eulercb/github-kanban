@@ -63,6 +63,13 @@ function matchesRule(entity: GitHubEntity, rule: FilterRule): boolean {
         fieldValue = 'false';
       }
       break;
+    case 'reviewer':
+      if (isPullRequest(entity)) {
+        fieldValue = entity.requested_reviewers.map((r) => r.login.toLowerCase());
+      } else {
+        fieldValue = [];
+      }
+      break;
     case 'review_status':
       if (isPullRequest(entity)) {
         fieldValue = entity.review_decision ?? (entity.requested_reviewers.length > 0 ? 'review_required' : 'none');

@@ -13,6 +13,7 @@ const FIELD_OPTIONS: { value: FilterField; label: string }[] = [
   { value: 'milestone', label: 'Milestone' },
   { value: 'org', label: 'Organisation' },
   { value: 'repo', label: 'Repository' },
+  { value: 'reviewer', label: 'Reviewer' },
   { value: 'review_status', label: 'Review Status' },
   { value: 'state', label: 'State' },
   { value: 'title', label: 'Title' },
@@ -115,21 +116,21 @@ export function FilterEditor({
       return repos;
     }
     const base = VALUE_SUGGESTIONS[field] ?? [];
-    if ((field === 'assignee' || field === 'author') && currentUser) {
+    if ((field === 'assignee' || field === 'author' || field === 'reviewer') && currentUser) {
       return ['me', ...base];
     }
     return base;
   };
 
   const getDisplayValue = (field: FilterField, value: string): string => {
-    if ((field === 'assignee' || field === 'author') && currentUser && value === currentUser) {
+    if ((field === 'assignee' || field === 'author' || field === 'reviewer') && currentUser && value === currentUser) {
       return 'me';
     }
     return value;
   };
 
   const resolveValue = (field: FilterField, displayVal: string): string => {
-    if ((field === 'assignee' || field === 'author') && displayVal === 'me' && currentUser) {
+    if ((field === 'assignee' || field === 'author' || field === 'reviewer') && displayVal === 'me' && currentUser) {
       return currentUser;
     }
     return displayVal;
