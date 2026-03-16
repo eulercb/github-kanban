@@ -26,7 +26,7 @@ import styles from './BoardView.module.css';
 
 export function BoardView() {
   const { state, updateBoard, addBoard, setActiveBoard } = useApp();
-  const { entities, isLoading, error } = useData();
+  const { entities, isLoading, progress, error } = useData();
   const [showNewBoard, setShowNewBoard] = useState(false);
   const [editingBoard, setEditingBoard] = useState<BoardConfig | null>(null);
   const [showBoardMenu, setShowBoardMenu] = useState(false);
@@ -187,7 +187,10 @@ export function BoardView() {
 
       {isLoading && (
         <div className={styles.loadingBar}>
-          <div className={styles.loadingProgress} />
+          <div
+            className={styles.loadingProgress}
+            style={{ width: `${Math.max(progress * 100, 2)}%` }}
+          />
         </div>
       )}
 

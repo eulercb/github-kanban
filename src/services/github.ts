@@ -311,8 +311,12 @@ export interface RepoData {
 export async function fetchAllRepoData(
   repos: string[],
   onRepoComplete?: (result: Map<string, RepoData>) => void,
+  onProgress?: (completed: number, total: number) => void,
 ): Promise<Map<string, RepoData>> {
   const result = new Map<string, RepoData>();
+  // Each repo has 2 steps: REST fetch + GraphQL enrichment
+  const totalSteps = repos.length * 2;
+  let completedSteps = 0;
 
   await Promise.all(
     repos.map(async (repoFullName) => {
@@ -330,10 +334,14 @@ export async function fetchAllRepoData(
       // Show REST data immediately, before GraphQL enrichment
       result.set(repoFullName, { issues: realIssues, pullRequests });
       onRepoComplete?.(result);
+      completedSteps++;
+      onProgress?.(completedSteps, totalSteps);
 
       // Enrich PRs with review/CI/thread data via GraphQL
       await enrichPullRequests(owner, repo, pullRequests);
       onRepoComplete?.(result);
+      completedSteps++;
+      onProgress?.(completedSteps, totalSteps);
     })
   );
 

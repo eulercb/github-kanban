@@ -19,6 +19,7 @@ import {
 interface DataContextValue {
   entities: GitHubEntity[];
   isLoading: boolean;
+  progress: number; // 0 to 1
   lastRefresh: Date | null;
   error: string | null;
   refresh: () => Promise<void>;
@@ -30,6 +31,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const { state } = useApp();
   const [entities, setEntities] = useState<GitHubEntity[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
   const refreshTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -84,12 +86,19 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
     isRefreshingRef.current = true;
     setIsLoading(true);
+    setProgress(0);
     setError(null);
 
     try {
-      const repoData = await fetchAllRepoData(repos, (partial) => {
-        setEntities(flattenAndSort(partial));
-      });
+      const repoData = await fetchAllRepoData(
+        repos,
+        (partial) => {
+          setEntities(flattenAndSort(partial));
+        },
+        (completed, total) => {
+          setProgress(total > 0 ? completed / total : 0);
+        },
+      );
 
       setEntities(flattenAndSort(repoData));
       setLastRefresh(new Date());
@@ -168,7 +177,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   return (
     <DataContext.Provider
-      value={{ entities, isLoading, lastRefresh, error, refresh }}
+      value={{ entities, isLoading, progress, lastRefresh, error, refresh }}
     >
       {children}
     </DataContext.Provider>

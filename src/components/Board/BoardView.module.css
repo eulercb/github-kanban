@@ -184,14 +184,8 @@
 
 .loadingProgress {
   height: 100%;
-  width: 30%;
   background: var(--accent-primary);
-  animation: loading 1.5s ease-in-out infinite;
-}
-
-@keyframes loading {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(400%); }
+  transition: width 0.3s ease;
 }
 
 .empty,
