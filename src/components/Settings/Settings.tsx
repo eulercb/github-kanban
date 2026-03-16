@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useApp } from '../../hooks/useApp';
-import { exportSettings } from '../../utils/export';
+import { exportSettings, buildExportData } from '../../utils/export';
 import { computeConfigHash, setGistSyncHash } from '../../utils/storage';
 import {
   validateToken,
@@ -45,12 +45,7 @@ export function Settings({ onClose }: Props) {
     setGistLoading(true);
     setGistMessage(null);
     try {
-      const data: ExportData = {
-        version: 1,
-        exportedAt: new Date().toISOString(),
-        boards: state.boards,
-        settings: state.settings,
-      };
+      const data = buildExportData(state);
       const id = await saveConfigToGist(data, state.gistId);
       setGistId(id);
       setGistSyncHash(computeConfigHash(state.boards, state.settings));

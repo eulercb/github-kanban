@@ -1,12 +1,23 @@
-import type { AppState, ExportData } from '../types';
+import type { AppState, BoardConfig, ExportData } from '../types';
 
-export function exportSettings(state: AppState): void {
-  const data: ExportData = {
+function cleanBoardsForExport(boards: BoardConfig[]): BoardConfig[] {
+  return boards.map(board => ({
+    ...board,
+    columns: board.columns.map(({ collapsed: _, width: __, ...col }) => col as typeof board.columns[number]),
+  }));
+}
+
+export function buildExportData(state: AppState): ExportData {
+  return {
     version: 1,
     exportedAt: new Date().toISOString(),
-    boards: state.boards,
+    boards: cleanBoardsForExport(state.boards),
     settings: state.settings,
   };
+}
+
+export function exportSettings(state: AppState): void {
+  const data = buildExportData(state);
   const blob = new Blob([JSON.stringify(data, null, 2)], {
     type: 'application/json',
   });
