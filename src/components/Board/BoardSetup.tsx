@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import type { BoardConfig, ColumnConfig } from '../../types';
 import { generateId } from '../../utils/id';
 import { searchRepos, fetchUserOrgs } from '../../services/github';
-import { useApp } from '../../contexts/AppContext';
+import { useApp } from '../../hooks/useApp';
 import { useDebounce } from '../../hooks/useDebounce';
 import styles from './BoardSetup.module.css';
 
@@ -120,8 +120,7 @@ export function BoardSetup({ onSave, onCancel, initialBoard }: Props) {
   // Run search when debounced query changes
   useEffect(() => {
     if (debouncedQuery.length < 2) {
-      setSearchResults([]);
-      setSearching(false);
+      searchAbortRef.current?.abort();
       return;
     }
 
@@ -130,28 +129,33 @@ export function BoardSetup({ onSave, onCancel, initialBoard }: Props) {
     const controller = new AbortController();
     searchAbortRef.current = controller;
 
-    setSearching(true);
+    let cancelled = false;
     const scopeLogin = scopeToUser ? state.currentUser?.login : undefined;
     const scopeOrgs = scopeToUser ? userOrgs : undefined;
 
+    Promise.resolve().then(() => { if (!cancelled) setSearching(true); });
+
     searchRepos(debouncedQuery, scopeLogin, scopeOrgs)
       .then((results) => {
-        if (!controller.signal.aborted) {
+        if (!cancelled) {
           setSearchResults(results.filter((r) => !repos.includes(r)));
         }
       })
       .catch(() => {
-        if (!controller.signal.aborted) {
+        if (!cancelled) {
           setSearchResults([]);
         }
       })
       .finally(() => {
-        if (!controller.signal.aborted) {
+        if (!cancelled) {
           setSearching(false);
         }
       });
 
-    return () => controller.abort();
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
   }, [debouncedQuery, scopeToUser, state.currentUser?.login, repos, userOrgs]);
 
   const addRepo = (repo: string) => {
@@ -243,7 +247,7 @@ export function BoardSetup({ onSave, onCancel, initialBoard }: Props) {
             placeholder="Search repos or type owner/repo..."
             className={styles.input}
           />
-          {searching && <span className={styles.spinner}>Searching...</span>}
+          {searching && debouncedQuery.length >= 2 && <span className={styles.spinner}>Searching...</span>}
         </div>
 
         {scopeToUser && state.currentUser && (
@@ -272,7 +276,7 @@ export function BoardSetup({ onSave, onCancel, initialBoard }: Props) {
           </button>
         )}
 
-        {searchResults.length > 0 && (
+        {searchResults.length > 0 && debouncedQuery.length >= 2 && (
           <div className={styles.searchResults}>
             {searchResults.map((repo) => (
               <button

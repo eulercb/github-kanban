@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { validateToken } from '../../services/github';
 import { initOctokit } from '../../services/github';
-import { useApp } from '../../contexts/AppContext';
+import { useApp } from '../../hooks/useApp';
 import styles from './TokenSetup.module.css';
 
 export function TokenSetup() {

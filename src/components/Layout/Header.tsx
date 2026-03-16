@@ -1,9 +1,17 @@
-import { useState } from 'react';
-import { useApp } from '../../contexts/AppContext';
-import { useData } from '../../contexts/DataContext';
+import { useState, useEffect, useReducer } from 'react';
+import { useApp } from '../../hooks/useApp';
+import { useData } from '../../hooks/useData';
 import { Settings } from '../Settings/Settings';
 import { LogoutDialog } from './LogoutDialog';
 import styles from './Header.module.css';
+
+function formatElapsed(lastRefresh: Date | null): string | null {
+  if (!lastRefresh) return null;
+  const diff = Math.floor((Date.now() - lastRefresh.getTime()) / 1000);
+  if (diff < 60) return `${diff}s ago`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  return `${Math.floor(diff / 3600)}h ago`;
+}
 
 export function Header() {
   const { state } = useApp();
@@ -11,14 +19,15 @@ export function Header() {
   const [showSettings, setShowSettings] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const [, tick] = useReducer((c: number) => c + 1, 0);
 
-  const formatLastRefresh = () => {
-    if (!lastRefresh) return null;
-    const diff = Math.floor((Date.now() - lastRefresh.getTime()) / 1000);
-    if (diff < 60) return `${diff}s ago`;
-    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-    return `${Math.floor(diff / 3600)}h ago`;
-  };
+  useEffect(() => {
+    if (!lastRefresh) return;
+    const timer = setInterval(tick, 10_000);
+    return () => clearInterval(timer);
+  }, [lastRefresh]);
+
+  const refreshLabel = formatElapsed(lastRefresh);
 
   return (
     <>
@@ -38,7 +47,7 @@ export function Header() {
             className={styles.iconButton}
             onClick={() => refresh()}
             disabled={isLoading}
-            title={lastRefresh ? `Last updated ${formatLastRefresh()}` : 'Refresh data'}
+            title={refreshLabel ? `Last updated ${refreshLabel}` : 'Refresh data'}
           >
             <svg
               width="16"

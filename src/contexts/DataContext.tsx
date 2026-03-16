@@ -1,31 +1,20 @@
 import {
-  createContext,
-  useContext,
   useState,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   type ReactNode,
 } from 'react';
 import type { GitHubEntity, FilterField } from '../types';
 import { fetchAllRepoData, saveConfigToGist } from '../services/github';
-import { useApp } from './AppContext';
+import { useApp } from '../hooks/useApp';
 import {
   computeConfigHash,
   getGistSyncHash,
   setGistSyncHash,
 } from '../utils/storage';
-
-interface DataContextValue {
-  entities: GitHubEntity[];
-  isLoading: boolean;
-  progress: number; // 0 to 1
-  lastRefresh: Date | null;
-  error: string | null;
-  refresh: () => Promise<void>;
-}
-
-const DataContext = createContext<DataContextValue | null>(null);
+import { DataContext } from './dataContextDef';
 
 export function DataProvider({ children }: { children: ReactNode }) {
   const { state } = useApp();
@@ -39,7 +28,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const hasLoadedRef = useRef(false);
 
   const activeBoard = state.boards.find((b) => b.id === state.activeBoardId);
-  const repos = activeBoard?.repos ?? [];
+  const repos = useMemo(() => activeBoard?.repos ?? [], [activeBoard?.repos]);
   const reposKey = repos.join(',');
   const isSyncingGistRef = useRef(false);
 
@@ -126,7 +115,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
       isRefreshingRef.current = false;
     }
-  }, [state.token, reposKey, needsEnrichment, syncGistIfNeeded, flattenAndSort]);
+  }, [state.token, repos, needsEnrichment, syncGistIfNeeded, flattenAndSort]);
 
   // Initial fetch when repos change
   useEffect(() => {
@@ -137,7 +126,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setEntities([]);
       hasLoadedRef.current = false;
     }
-  }, [state.token, reposKey]);
+  }, [state.token, reposKey, repos.length, refresh]);
 
   // Auto-refresh timer
   useEffect(() => {
@@ -169,6 +158,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     state.settings.autoRefreshInterval,
     state.token,
     reposKey,
+    repos.length,
     refresh,
   ]);
 
@@ -192,7 +182,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, [state.settings.refreshOnFocus, state.settings.autoRefreshInterval, state.token, reposKey, lastRefresh, refresh]);
+  }, [state.settings.refreshOnFocus, state.settings.autoRefreshInterval, state.token, reposKey, repos.length, lastRefresh, refresh]);
 
   return (
     <DataContext.Provider
@@ -201,10 +191,4 @@ export function DataProvider({ children }: { children: ReactNode }) {
       {children}
     </DataContext.Provider>
   );
-}
-
-export function useData(): DataContextValue {
-  const ctx = useContext(DataContext);
-  if (!ctx) throw new Error('useData must be used within DataProvider');
-  return ctx;
 }

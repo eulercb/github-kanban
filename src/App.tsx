@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
-import { AppProvider, useApp } from './contexts/AppContext';
+import { useEffect, useRef, useState } from 'react';
+import { AppProvider } from './contexts/AppContext';
+import { useApp } from './hooks/useApp';
 import { DataProvider } from './contexts/DataContext';
 import { TokenSetup } from './components/Auth/TokenSetup';
 import { Header } from './components/Layout/Header';
@@ -11,10 +12,14 @@ import './styles/global.css';
 function AppContent() {
   const { state, setUser, setToken } = useApp();
   const [isValidating, setIsValidating] = useState(true);
+  const hasValidatedRef = useRef(false);
 
   useTheme();
 
   useEffect(() => {
+    if (hasValidatedRef.current) return;
+    hasValidatedRef.current = true;
+
     const checkToken = async () => {
       if (!state.token) {
         setIsValidating(false);
@@ -33,7 +38,7 @@ function AppContent() {
     };
 
     checkToken();
-  }, []);
+  }, [state.token, setUser, setToken]);
 
   if (isValidating) {
     return (

@@ -26,14 +26,13 @@ export function useCardAnimations(
   const isFirstRenderRef = useRef(true);
   const [exitingCards, setExitingCards] = useState<ExitingCard[]>([]);
 
-  // Build current entities map (updated each render via ref)
-  const entitiesMapRef = useRef<Map<string, GitHubEntity>>(new Map());
-  entitiesMapRef.current = new Map();
-  for (const e of entities) {
-    entitiesMapRef.current.set(entityKeyFn(e), e);
-  }
-
   useLayoutEffect(() => {
+    // Build current entities map inside the effect to avoid ref writes during render
+    const entitiesMap = new Map<string, GitHubEntity>();
+    for (const e of entities) {
+      entitiesMap.set(entityKeyFn(e), e);
+    }
+
     const board = boardRef.current;
     if (!board) return;
 
@@ -119,7 +118,8 @@ export function useCardAnimations(
       });
 
       if (exiting.length > 0) {
-        setExitingCards(exiting);
+        const exitingCopy = exiting;
+        queueMicrotask(() => setExitingCards(exitingCopy));
       }
     }
 
@@ -127,8 +127,8 @@ export function useCardAnimations(
 
     // Store current state for next render
     prevPositionsRef.current = currentPositions;
-    prevEntitiesMapRef.current = entitiesMapRef.current;
-  });
+    prevEntitiesMapRef.current = entitiesMap;
+  }, [boardRef, entities, entityKeyFn]);
 
   const dismissExitingCard = useCallback((key: string) => {
     setExitingCards((prev) => prev.filter((c) => c.key !== key));

@@ -1,7 +1,8 @@
 import React from 'react';
 import type { GitHubEntity, GitHubPullRequest } from '../../types';
 import { isPullRequest } from '../../types';
-import { useApp } from '../../contexts/AppContext';
+import { useApp } from '../../hooks/useApp';
+import { entityKey } from '../../utils/entityKey';
 import styles from './EntityCard.module.css';
 
 interface Props {
@@ -156,9 +157,6 @@ function PrStatusIcons({ pr }: { pr: GitHubPullRequest }) {
   return <>{icons}</>;
 }
 
-export function entityKey(entity: GitHubEntity): string {
-  return `${entity.id}-${entity.html_url}`;
-}
 
 export function EntityCard({ entity, columnId }: Props) {
   const { state } = useApp();
