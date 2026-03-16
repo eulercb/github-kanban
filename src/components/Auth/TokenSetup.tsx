@@ -112,6 +112,16 @@ export function TokenSetup() {
           Your token is stored locally in your browser and is never sent to any
           third-party server.
         </p>
+
+        <p className={styles.repoLink}>
+          <a
+            href="https://github.com/eulercb/github-kanban"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            View this project on GitHub
+          </a>
+        </p>
       </div>
     </div>
   );

@@ -166,3 +166,18 @@
   color: var(--text-tertiary);
   margin-top: 16px;
 }
+
+.repoLink {
+  text-align: center;
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+.repoLink a {
+  color: var(--accent-primary);
+  text-decoration: none;
+}
+
+.repoLink a:hover {
+  text-decoration: underline;
+}
