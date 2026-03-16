@@ -74,7 +74,16 @@ No external CSS frameworks. No state management libraries. No build-time depende
 
 ## AI-Powered Board Setup
 
-If you use [Claude Code](https://docs.anthropic.com/en/docs/claude-code), you can generate entire board configurations from a plain English description using the built-in `/generate-board` skill:
+If you use [Claude Code](https://docs.anthropic.com/en/docs/claude-code), you can install this repo as a plugin to generate board configurations from a plain English description.
+
+**1. Add the marketplace and install the plugin:**
+
+```bash
+/plugin marketplace add eulercb/github-kanban
+/plugin install github-kanban@github-kanban
+```
+
+**2. Use the `/generate-board` skill:**
 
 ```
 /generate-board pr-review for my-org/api and my-org/web
