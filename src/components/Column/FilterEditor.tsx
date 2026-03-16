@@ -146,7 +146,7 @@ export function FilterEditor({
               <span className={styles.groupSeparatorLine} />
             </div>
           )}
-          <div className={groups.length > 1 ? styles.group : undefined}>
+          <div className={groups.length > 1 ? styles.group : styles.groupInner}>
             <div className={styles.groupHeader}>
               {group.filters.length > 1 && (
                 <div className={styles.combinationToggle}>
