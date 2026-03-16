@@ -72,6 +72,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
       });
   }, [state.gistId, state.boards, state.settings]);
 
+  const refreshFnRef = useRef<(() => Promise<void>) | null>(null);
+
   const flattenAndSort = useCallback((repoData: Map<string, { issues: GitHubEntity[]; pullRequests: GitHubEntity[] }>) => {
     const all: GitHubEntity[] = [];
     for (const [, data] of repoData) {
@@ -117,16 +119,20 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
   }, [state.token, repos, needsEnrichment, syncGistIfNeeded, flattenAndSort]);
 
+  // Keep ref in sync so effects can call the latest refresh without depending on it
+  refreshFnRef.current = refresh;
+
   // Initial fetch when repos change
   useEffect(() => {
     if (state.token && repos.length > 0) {
       hasLoadedRef.current = false;
-      refresh();
+      refreshFnRef.current?.();
     } else {
       setEntities([]);
       hasLoadedRef.current = false;
     }
-  }, [state.token, reposKey, repos.length, refresh]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.token, reposKey, repos.length]);
 
   // Auto-refresh timer
   useEffect(() => {
