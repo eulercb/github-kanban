@@ -152,7 +152,7 @@ function PrStatusIcons({ pr }: { pr: GitHubPullRequest }) {
 
   if (icons.length === 0) return null;
 
-  return <div className={styles.prStatus}>{icons}</div>;
+  return <>{icons}</>;
 }
 
 export function entityKey(entity: GitHubEntity): string {
@@ -166,10 +166,11 @@ export function EntityCard({ entity }: Props) {
   const repo = getEntityRepo(entity);
   const pr = isPullRequest(entity);
 
-  const showFooter = !compact && (d.showAssignees || d.showCommentCount);
-  const hasAssignees = d.showAssignees && entity.assignees.length > 0;
-  const hasComments = d.showCommentCount && entity.comments > 0;
-  const hasReviewers = d.showCommentCount && pr && isPullRequest(entity) && entity.requested_reviewers.length > 0;
+  const hasAssignees = !compact && d.showAssignees && entity.assignees.length > 0;
+  const hasComments = !compact && d.showCommentCount && entity.comments > 0;
+  const hasReviewers = !compact && d.showCommentCount && pr && isPullRequest(entity) && entity.requested_reviewers.length > 0;
+  const hasPrStatus = !compact && d.showPrStatus && pr && isPullRequest(entity);
+  const showDetails = hasAssignees || hasComments || hasReviewers || hasPrStatus;
 
   return (
     <a
@@ -195,8 +196,6 @@ export function EntityCard({ entity }: Props) {
         )}
       </div>
 
-      {d.showPrStatus && pr && isPullRequest(entity) && <PrStatusIcons pr={entity} />}
-
       {d.showLabels && entity.labels.length > 0 && !compact && (
         <div className={styles.labels}>
           {entity.labels.map((label) => (
@@ -215,44 +214,45 @@ export function EntityCard({ entity }: Props) {
         </div>
       )}
 
-      {showFooter && (hasAssignees || hasComments || hasReviewers) && (
-        <div className={styles.footer}>
-          <div className={styles.assignees}>
-            {hasAssignees && entity.assignees.slice(0, 3).map((a) => (
-              <img
-                key={a.login}
-                src={a.avatar_url}
-                alt={a.login}
-                title={a.login}
-                className={styles.assigneeAvatar}
-                width={20}
-                height={20}
-              />
-            ))}
-            {hasAssignees && entity.assignees.length > 3 && (
-              <span className={styles.moreAssignees}>
-                +{entity.assignees.length - 3}
-              </span>
-            )}
-          </div>
-          <div className={styles.stats}>
-            {hasComments && (
-              <span className={styles.stat}>
-                <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
-                  <path d="M1 2.75C1 1.784 1.784 1 2.75 1h10.5c.966 0 1.75.784 1.75 1.75v7.5A1.75 1.75 0 0 1 13.25 12H9.06l-2.573 2.573A1.458 1.458 0 0 1 4 13.543V12H2.75A1.75 1.75 0 0 1 1 10.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h4.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z" />
-                </svg>
-                {entity.comments}
-              </span>
-            )}
-            {hasReviewers && isPullRequest(entity) && (
-              <span className={styles.stat} title="Pending reviewers">
-                <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
-                  <path d="M8 2c1.981 0 3.671.992 4.933 2.078 1.27 1.091 2.187 2.345 2.637 3.023a1.62 1.62 0 0 1 0 1.798c-.45.678-1.367 1.932-2.637 3.023C11.67 13.008 9.981 14 8 14c-1.981 0-3.671-.992-4.933-2.078C1.797 10.83.88 9.576.43 8.898a1.62 1.62 0 0 1 0-1.798c.45-.677 1.367-1.931 2.637-3.022C4.33 2.992 6.019 2 8 2ZM1.679 7.932a.12.12 0 0 0 0 .136c.411.622 1.241 1.75 2.366 2.717C5.176 11.758 6.527 12.5 8 12.5c1.473 0 2.825-.742 3.955-1.715 1.124-.967 1.954-2.096 2.366-2.717a.12.12 0 0 0 0-.136c-.412-.621-1.242-1.75-2.366-2.717C10.824 4.242 9.473 3.5 8 3.5c-1.473 0-2.824.742-3.955 1.715-1.124.967-1.954 2.096-2.366 2.717ZM8 10a2 2 0 1 1-.001-3.999A2 2 0 0 1 8 10Z" />
-                </svg>
-                {entity.requested_reviewers.length}
-              </span>
-            )}
-          </div>
+      {showDetails && (
+        <div className={styles.details}>
+          {hasAssignees && (
+            <div className={styles.assignees}>
+              {entity.assignees.slice(0, 3).map((a) => (
+                <img
+                  key={a.login}
+                  src={a.avatar_url}
+                  alt={a.login}
+                  title={a.login}
+                  className={styles.assigneeAvatar}
+                  width={20}
+                  height={20}
+                />
+              ))}
+              {entity.assignees.length > 3 && (
+                <span className={styles.moreAssignees}>
+                  +{entity.assignees.length - 3}
+                </span>
+              )}
+            </div>
+          )}
+          {hasPrStatus && isPullRequest(entity) && <PrStatusIcons pr={entity} />}
+          {hasComments && (
+            <span className={styles.stat}>
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M1 2.75C1 1.784 1.784 1 2.75 1h10.5c.966 0 1.75.784 1.75 1.75v7.5A1.75 1.75 0 0 1 13.25 12H9.06l-2.573 2.573A1.458 1.458 0 0 1 4 13.543V12H2.75A1.75 1.75 0 0 1 1 10.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h4.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z" />
+              </svg>
+              {entity.comments}
+            </span>
+          )}
+          {hasReviewers && isPullRequest(entity) && (
+            <span className={styles.stat} title="Pending reviewers">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 2c1.981 0 3.671.992 4.933 2.078 1.27 1.091 2.187 2.345 2.637 3.023a1.62 1.62 0 0 1 0 1.798c-.45.678-1.367 1.932-2.637 3.023C11.67 13.008 9.981 14 8 14c-1.981 0-3.671-.992-4.933-2.078C1.797 10.83.88 9.576.43 8.898a1.62 1.62 0 0 1 0-1.798c.45-.677 1.367-1.931 2.637-3.022C4.33 2.992 6.019 2 8 2ZM1.679 7.932a.12.12 0 0 0 0 .136c.411.622 1.241 1.75 2.366 2.717C5.176 11.758 6.527 12.5 8 12.5c1.473 0 2.825-.742 3.955-1.715 1.124-.967 1.954-2.096 2.366-2.717a.12.12 0 0 0 0-.136c-.412-.621-1.242-1.75-2.366-2.717C10.824 4.242 9.473 3.5 8 3.5c-1.473 0-2.824.742-3.955 1.715-1.124.967-1.954 2.096-2.366 2.717ZM8 10a2 2 0 1 1-.001-3.999A2 2 0 0 1 8 10Z" />
+              </svg>
+              {entity.requested_reviewers.length}
+            </span>
+          )}
         </div>
       )}
     </a>
