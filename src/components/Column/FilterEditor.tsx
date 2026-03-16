@@ -4,21 +4,21 @@ import { generateId } from '../../utils/id';
 import styles from './FilterEditor.module.css';
 
 const FIELD_OPTIONS: { value: FilterField; label: string }[] = [
-  { value: 'type', label: 'Type' },
-  { value: 'state', label: 'State' },
   { value: 'assignee', label: 'Assignee' },
   { value: 'author', label: 'Author' },
+  { value: 'ci_status', label: 'CI Status' },
+  { value: 'draft', label: 'Draft' },
+  { value: 'has_pull_request', label: 'Has PR' },
   { value: 'label', label: 'Label' },
   { value: 'milestone', label: 'Milestone' },
-  { value: 'repo', label: 'Repository' },
   { value: 'org', label: 'Organisation' },
-  { value: 'draft', label: 'Draft' },
+  { value: 'repo', label: 'Repository' },
   { value: 'review_status', label: 'Review Status' },
-  { value: 'ci_status', label: 'CI Status' },
+  { value: 'state', label: 'State' },
+  { value: 'title', label: 'Title' },
+  { value: 'type', label: 'Type' },
   { value: 'has_unresolved_comments', label: 'Unresolved Comments' },
   { value: 'has_unviewed_files', label: 'Unviewed Files' },
-  { value: 'title', label: 'Title' },
-  { value: 'has_pull_request', label: 'Has PR' },
 ];
 
 const OPERATOR_OPTIONS: { value: FilterOperator; label: string }[] = [
