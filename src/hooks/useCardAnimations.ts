@@ -1,10 +1,19 @@
 import { useLayoutEffect, useRef, useState, useCallback } from 'react';
 import type { GitHubEntity } from '../types';
+import { isPullRequest } from '../types';
 
 interface ExitingCard {
   key: string;
   entity: GitHubEntity;
   rect: DOMRect;
+}
+
+function getEffectiveStatus(entity: GitHubEntity): string {
+  if (isPullRequest(entity)) {
+    if (entity.merged_at) return 'merged';
+    if (entity.draft) return 'draft';
+  }
+  return entity.state; // 'open' or 'closed'
 }
 
 /**
@@ -24,6 +33,7 @@ export function useCardAnimations(
 ) {
   const prevPositionsRef = useRef<Map<string, DOMRect>>(new Map());
   const prevEntitiesMapRef = useRef<Map<string, GitHubEntity>>(new Map());
+  const prevStatusesRef = useRef<Map<number, string>>(new Map());
   const isFirstRenderRef = useRef(true);
   const [exitingCards, setExitingCards] = useState<ExitingCard[]>([]);
 
@@ -122,6 +132,32 @@ export function useCardAnimations(
         const exitingCopy = exiting;
         queueMicrotask(() => setExitingCards(exitingCopy));
       }
+
+      // Detect status changes and apply highlight animation
+      const changedEntityIds = new Set<number>();
+      const prevStatuses = prevStatusesRef.current;
+      for (const entity of entities) {
+        const prevStatus = prevStatuses.get(entity.id);
+        if (prevStatus !== undefined && prevStatus !== getEffectiveStatus(entity)) {
+          changedEntityIds.add(entity.id);
+        }
+      }
+
+      if (changedEntityIds.size > 0) {
+        cards.forEach((card) => {
+          const key = card.dataset.entityKey!;
+          // Keys may be column-prefixed (columnId:entityKey) — try both
+          const entity = entitiesMap.get(key) ?? entitiesMap.get(key.split(':').slice(1).join(':'));
+          if (entity && changedEntityIds.has(entity.id)) {
+            card.classList.add('card-status-changed');
+            card.addEventListener(
+              'animationend',
+              () => card.classList.remove('card-status-changed'),
+              { once: true }
+            );
+          }
+        });
+      }
     }
 
     isFirstRenderRef.current = false;
@@ -129,6 +165,13 @@ export function useCardAnimations(
     // Store current state for next render
     prevPositionsRef.current = currentPositions;
     prevEntitiesMapRef.current = entitiesMap;
+
+    // Update status tracking
+    const statuses = new Map<number, string>();
+    for (const entity of entities) {
+      statuses.set(entity.id, getEffectiveStatus(entity));
+    }
+    prevStatusesRef.current = statuses;
   }, [boardRef, entities, entityKeyFn, enabled]);
 
   const dismissExitingCard = useCallback((key: string) => {
