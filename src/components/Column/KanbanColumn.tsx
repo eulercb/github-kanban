@@ -68,9 +68,10 @@ export function KanbanColumn({
     isDragging,
   } = useSortable({ id: column.id });
 
+  const { animationsEnabled } = state.settings;
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
+    transition: animationsEnabled ? transition : undefined,
     opacity: isDragging ? 0.5 : 1,
   };
 

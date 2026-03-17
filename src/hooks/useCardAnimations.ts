@@ -19,7 +19,8 @@ interface ExitingCard {
 export function useCardAnimations(
   boardRef: React.RefObject<HTMLDivElement | null>,
   entities: GitHubEntity[],
-  entityKeyFn: (e: GitHubEntity) => string
+  entityKeyFn: (e: GitHubEntity) => string,
+  enabled: boolean = true,
 ) {
   const prevPositionsRef = useRef<Map<string, DOMRect>>(new Map());
   const prevEntitiesMapRef = useRef<Map<string, GitHubEntity>>(new Map());
@@ -48,8 +49,8 @@ export function useCardAnimations(
 
     const prevPositions = prevPositionsRef.current;
 
-    // Skip animations on first render
-    if (!isFirstRenderRef.current && prevPositions.size > 0) {
+    // Skip animations on first render or when disabled
+    if (enabled && !isFirstRenderRef.current && prevPositions.size > 0) {
       // Find entering cards (new keys not in previous positions)
       const entering = new Set<string>();
       currentKeys.forEach((key) => {
@@ -128,7 +129,7 @@ export function useCardAnimations(
     // Store current state for next render
     prevPositionsRef.current = currentPositions;
     prevEntitiesMapRef.current = entitiesMap;
-  }, [boardRef, entities, entityKeyFn]);
+  }, [boardRef, entities, entityKeyFn, enabled]);
 
   const dismissExitingCard = useCallback((key: string) => {
     setExitingCards((prev) => prev.filter((c) => c.key !== key));

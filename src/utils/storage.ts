@@ -13,6 +13,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   compactCards: false,
   cardDisplay: { ...DEFAULT_CARD_DISPLAY },
   showLoadingBar: true,
+  animationsEnabled: true,
 };
 
 const DEFAULT_STATE: AppState = {

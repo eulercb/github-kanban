@@ -37,7 +37,8 @@ export function BoardView() {
   const { exitingCards, dismissExitingCard } = useCardAnimations(
     boardRef,
     entities,
-    entityKey
+    entityKey,
+    state.settings.animationsEnabled,
   );
 
   const activeBoard = state.boards.find((b) => b.id === state.activeBoardId);

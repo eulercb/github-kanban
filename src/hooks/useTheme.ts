@@ -3,7 +3,7 @@ import { useApp } from './useApp';
 
 export function useTheme() {
   const { state } = useApp();
-  const { theme } = state.settings;
+  const { theme, animationsEnabled } = state.settings;
 
   useEffect(() => {
     const root = document.documentElement;
@@ -25,4 +25,11 @@ export function useTheme() {
       applyTheme(theme);
     }
   }, [theme]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute(
+      'data-reduce-motion',
+      animationsEnabled ? 'false' : 'true'
+    );
+  }, [animationsEnabled]);
 }

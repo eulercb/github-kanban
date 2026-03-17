@@ -187,6 +187,7 @@ export interface AppSettings {
   compactCards: boolean;
   cardDisplay: CardDisplaySettings;
   showLoadingBar: boolean;
+  animationsEnabled: boolean;
 }
 
 export interface AppState {
