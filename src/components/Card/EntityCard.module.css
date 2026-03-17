@@ -223,3 +223,19 @@
   animation: cardExit 0.25s ease-in both;
   pointer-events: none;
 }
+
+@keyframes cardStatusChanged {
+  0% {
+    box-shadow: 0 0 0 0 var(--accent-primary);
+  }
+  30% {
+    box-shadow: 0 0 0 3px var(--accent-primary);
+  }
+  100% {
+    box-shadow: var(--card-shadow);
+  }
+}
+
+:global(.card-status-changed) {
+  animation: cardStatusChanged 0.8s ease-out both;
+}
