@@ -116,3 +116,10 @@
   --scrollbar-track: transparent;
   --focus-ring: 0 0 0 3px rgba(88, 166, 255, 0.3);
 }
+
+[data-reduce-motion='true'],
+[data-reduce-motion='true'] * {
+  --transition-speed: 0ms;
+  animation-duration: 0ms !important;
+  transition-duration: 0ms !important;
+}

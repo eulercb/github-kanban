@@ -339,6 +339,28 @@ export function Settings({ onClose }: Props) {
               </div>
 
               <div className={styles.field}>
+                <label className={styles.label}>Animated transitions</label>
+                <div className={styles.toggleRow}>
+                  <label className={styles.toggle}>
+                    <input
+                      type="checkbox"
+                      checked={settings.animationsEnabled}
+                      onChange={(e) =>
+                        updateSettings({
+                          ...settings,
+                          animationsEnabled: e.target.checked,
+                        })
+                      }
+                    />
+                    <span className={styles.toggleSlider} />
+                  </label>
+                  <span className={styles.toggleLabel}>
+                    {settings.animationsEnabled ? 'Enabled' : 'Disabled'}
+                  </span>
+                </div>
+              </div>
+
+              <div className={styles.field}>
                 <label className={styles.label}>Card display</label>
                 <div className={styles.toggleRow}>
                   <label className={styles.toggle}>
