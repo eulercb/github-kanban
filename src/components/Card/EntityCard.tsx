@@ -178,6 +178,7 @@ export function EntityCard({ entity, columnId }: Props) {
       rel="noopener noreferrer"
       className={`${styles.card} ${compact ? styles.compact : ''}`}
       data-entity-key={columnId ? `${columnId}:${entityKey(entity)}` : entityKey(entity)}
+      onContextMenu={(e) => e.stopPropagation()}
     >
       <div className={styles.header}>
         <StateIcon entity={entity} />
