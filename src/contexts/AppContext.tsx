@@ -10,7 +10,7 @@ import type {
   BoardConfig,
   GitHubUser,
 } from '../types';
-import { loadState, saveState, saveToken, DEFAULT_SETTINGS } from '../utils/storage';
+import { loadState, saveState, saveToken, clearEntityCache, clearEntityCacheFor, DEFAULT_SETTINGS } from '../utils/storage';
 import { AppContext } from './appContextDef';
 import type { AppAction } from './appContextDef';
 
@@ -92,6 +92,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const deleteBoard = useCallback((boardId: string) => {
+    clearEntityCacheFor(boardId);
     dispatch({ type: 'DELETE_BOARD', boardId });
   }, []);
 
@@ -109,6 +110,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(() => {
     saveToken(null);
+    clearEntityCache();
     dispatch({ type: 'LOGOUT' });
   }, []);
 
