@@ -186,6 +186,7 @@ export interface AppSettings {
   refreshOnFocus: boolean;
   compactCards: boolean;
   cardDisplay: CardDisplaySettings;
+  showLoadingBar: boolean;
 }
 
 export interface AppState {
