@@ -13,6 +13,8 @@ import {
   computeConfigHash,
   getGistSyncHash,
   setGistSyncHash,
+  saveEntityCache,
+  loadEntityCache,
 } from '../utils/storage';
 import { DataContext } from './dataContextDef';
 
@@ -107,9 +109,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
         !needsEnrichment,
       );
 
-      setEntities(flattenAndSort(repoData));
+      const sorted = flattenAndSort(repoData);
+      setEntities(sorted);
       setLastRefresh(new Date());
       hasLoadedRef.current = true;
+      if (state.activeBoardId) {
+        saveEntityCache(state.activeBoardId, sorted);
+      }
       syncGistIfNeeded();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch data');
@@ -122,10 +128,21 @@ export function DataProvider({ children }: { children: ReactNode }) {
   // Keep ref in sync so effects can call the latest refresh without depending on it
   refreshFnRef.current = refresh;
 
-  // Initial fetch when repos change
+  // Initial fetch when repos change — restore from session cache first
   useEffect(() => {
     if (state.token && repos.length > 0) {
       hasLoadedRef.current = false;
+
+      // Restore cached entities so the board renders instantly
+      if (state.activeBoardId) {
+        const cached = loadEntityCache(state.activeBoardId);
+        if (cached) {
+          setEntities(cached.entities as GitHubEntity[]);
+          setLastRefresh(cached.cachedAt);
+          hasLoadedRef.current = true;
+        }
+      }
+
       refreshFnRef.current?.();
     } else {
       setEntities([]);

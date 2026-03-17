@@ -96,4 +96,45 @@ export function clearAllData(): void {
   localStorage.removeItem(STORAGE_KEY);
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(GIST_SYNC_HASH_KEY);
+  clearEntityCache();
+}
+
+// Session cache for API data — survives page refresh but not tab close
+const ENTITY_CACHE_PREFIX = 'github-kanban-entities:';
+const ENTITY_CACHE_TIME_PREFIX = 'github-kanban-entities-time:';
+
+export function saveEntityCache(boardId: string, entities: unknown[]): void {
+  try {
+    sessionStorage.setItem(ENTITY_CACHE_PREFIX + boardId, JSON.stringify(entities));
+    sessionStorage.setItem(ENTITY_CACHE_TIME_PREFIX + boardId, new Date().toISOString());
+  } catch {
+    // sessionStorage may be full — silently ignore
+  }
+}
+
+export function loadEntityCache(boardId: string): { entities: unknown[]; cachedAt: Date } | null {
+  try {
+    const raw = sessionStorage.getItem(ENTITY_CACHE_PREFIX + boardId);
+    const time = sessionStorage.getItem(ENTITY_CACHE_TIME_PREFIX + boardId);
+    if (!raw || !time) return null;
+    return { entities: JSON.parse(raw), cachedAt: new Date(time) };
+  } catch {
+    return null;
+  }
+}
+
+export function clearEntityCacheFor(boardId: string): void {
+  sessionStorage.removeItem(ENTITY_CACHE_PREFIX + boardId);
+  sessionStorage.removeItem(ENTITY_CACHE_TIME_PREFIX + boardId);
+}
+
+export function clearEntityCache(): void {
+  const keys: string[] = [];
+  for (let i = 0; i < sessionStorage.length; i++) {
+    const key = sessionStorage.key(i);
+    if (key?.startsWith(ENTITY_CACHE_PREFIX) || key?.startsWith(ENTITY_CACHE_TIME_PREFIX)) {
+      keys.push(key);
+    }
+  }
+  keys.forEach(k => sessionStorage.removeItem(k));
 }
