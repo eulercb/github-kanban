@@ -12,6 +12,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   refreshOnFocus: true,
   compactCards: false,
   cardDisplay: { ...DEFAULT_CARD_DISPLAY },
+  showLoadingBar: true,
 };
 
 const DEFAULT_STATE: AppState = {

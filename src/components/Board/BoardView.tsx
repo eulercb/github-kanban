@@ -185,7 +185,7 @@ export function BoardView() {
         </div>
       )}
 
-      {isLoading && (
+      {isLoading && state.settings.showLoadingBar && (
         <div className={styles.loadingBar}>
           <div
             className={styles.loadingProgress}
