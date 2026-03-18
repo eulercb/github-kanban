@@ -76,6 +76,7 @@ export interface GitHubPullRequest {
   changes_requested_count?: number;
   unresolved_comment_count?: number;
   unviewed_files_count?: number;
+  reviewed_by?: string[];
 }
 
 export type GitHubEntity = GitHubIssue | GitHubPullRequest;
@@ -106,6 +107,7 @@ export type FilterField =
   | 'has_unresolved_comments' // true/false
   | 'has_unviewed_files' // true/false
   | 'title'          // text search
+  | 'reviewed_by'      // user login (users who have submitted a review)
   | 'has_pull_request'; // for issues linked to PRs
 
 export interface FilterRule {
