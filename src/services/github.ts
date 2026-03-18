@@ -303,8 +303,7 @@ async function enrichPullRequests(
         }
       }
     } catch {
-      // If GraphQL enrichment fails, leave enriched fields as undefined
-      break;
+      continue;
     }
   }
 }
@@ -390,14 +389,14 @@ export async function searchRepos(
 
 const GIST_FILENAME = 'github-kanban-config.json';
 
-export async function checkGistScope(): Promise<boolean> {
+export async function checkGistScope(): Promise<boolean | null> {
   const kit = getOctokit();
   try {
     const response = await kit.rest.gists.list({ per_page: 1 });
     const scopes = response.headers['x-oauth-scopes'] ?? '';
     return scopes.split(',').map(s => s.trim()).includes('gist');
   } catch {
-    return false;
+    return null;
   }
 }
 
@@ -413,7 +412,11 @@ export async function findConfigGist(): Promise<{ id: string; data: ExportData }
         const { data: full } = await kit.rest.gists.get({ gist_id: gist.id });
         const file = full.files?.[GIST_FILENAME];
         if (file?.content) {
-          return { id: gist.id, data: JSON.parse(file.content) as ExportData };
+          try {
+            return { id: gist.id, data: JSON.parse(file.content) as ExportData };
+          } catch {
+            throw new Error('The configuration Gist contains invalid JSON. It may have been manually edited or corrupted.');
+          }
         }
       }
     }
@@ -432,8 +435,10 @@ export async function saveConfigToGist(
     try {
       await kit.rest.gists.update({ gist_id: existingGistId, files });
       return existingGistId;
-    } catch {
-      // Gist may have been deleted — fall through to create
+    } catch (err) {
+      const status = (err as { status?: number }).status;
+      if (status !== 404) throw err;
+      // Gist was deleted — fall through to create a new one
     }
   }
 
@@ -452,7 +457,11 @@ export async function loadConfigFromGist(gistId: string): Promise<ExportData> {
   if (!file?.content) {
     throw new Error('Gist does not contain a valid configuration file');
   }
-  return JSON.parse(file.content) as ExportData;
+  try {
+    return JSON.parse(file.content) as ExportData;
+  } catch {
+    throw new Error('The configuration Gist contains invalid JSON. It may have been manually edited or corrupted.');
+  }
 }
 
 export async function getUserRepos(): Promise<string[]> {

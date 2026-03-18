@@ -12,6 +12,7 @@ import './styles/global.css';
 function AppContent() {
   const { state, setUser, setToken } = useApp();
   const [isValidating, setIsValidating] = useState(true);
+  const [tokenError, setTokenError] = useState<string | null>(null);
   const hasValidatedRef = useRef(false);
 
   useTheme();
@@ -30,7 +31,17 @@ function AppContent() {
         initOctokit(state.token);
         const user = await validateToken(state.token);
         setUser(user);
-      } catch {
+      } catch (err) {
+        const status = (err as { status?: number }).status;
+        if (status === 401) {
+          setTokenError('Your token has expired or been revoked. Please enter a new token.');
+        } else if (status === 403) {
+          setTokenError('Access forbidden. Your token may lack required permissions.');
+        } else if (!navigator.onLine || !status) {
+          setTokenError('Could not connect to GitHub. Check your internet connection and try again.');
+        } else {
+          setTokenError('Failed to validate token. Please try again later.');
+        }
         setToken(null);
       } finally {
         setIsValidating(false);
@@ -58,7 +69,7 @@ function AppContent() {
   }
 
   if (!state.token || !state.currentUser) {
-    return <TokenSetup />;
+    return <TokenSetup initialError={tokenError} />;
   }
 
   return (

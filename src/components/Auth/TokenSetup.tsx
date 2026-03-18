@@ -3,11 +3,15 @@ import { validateToken, initOctokit } from '../../services/github';
 import { useApp } from '../../hooks/useApp';
 import styles from './TokenSetup.module.css';
 
-export function TokenSetup() {
+interface Props {
+  initialError?: string | null;
+}
+
+export function TokenSetup({ initialError }: Props) {
   const { setToken, setUser } = useApp();
   const [tokenInput, setTokenInput] = useState('');
   const [isValidating, setIsValidating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(initialError ?? null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

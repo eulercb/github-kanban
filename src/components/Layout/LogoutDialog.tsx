@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useApp } from '../../hooks/useApp';
 import { exportSettings } from '../../utils/export';
 import { saveConfigToGist } from '../../services/github';
@@ -14,9 +14,13 @@ export function LogoutDialog({ onClose }: Props) {
   const { state, logout } = useApp();
   const gistEnabled = !!state.gistId;
   const [gistSyncFailed, setGistSyncFailed] = useState(false);
+  const hasRunRef = useRef(false);
 
   // If gist is enabled, sync (if needed) and sign out automatically
   useEffect(() => {
+    if (hasRunRef.current) return;
+    hasRunRef.current = true;
+
     if (!gistEnabled) return;
 
     const currentHash = computeConfigHash(state.boards, state.settings);
@@ -42,7 +46,7 @@ export function LogoutDialog({ onClose }: Props) {
     }).catch(() => {
       setGistSyncFailed(true);
     });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [gistEnabled, state.boards, state.settings, state.gistId, logout, onClose]);
 
   // Gist enabled and sync hasn't failed yet — show syncing indicator (or nothing briefly)
   if (gistEnabled && !gistSyncFailed) {

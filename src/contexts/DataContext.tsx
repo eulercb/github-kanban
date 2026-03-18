@@ -28,6 +28,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const refreshTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isRefreshingRef = useRef(false);
   const hasLoadedRef = useRef(false);
+  const lastRefreshRef = useRef<Date | null>(null);
 
   const activeBoard = state.boards.find((b) => b.id === state.activeBoardId);
   const repos = useMemo(() => activeBoard?.repos ?? [], [activeBoard?.repos]);
@@ -36,7 +37,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   // Determine if GraphQL enrichment is needed based on current settings and filters
   const ENRICHED_FIELDS: FilterField[] = [
-    'review_status', 'ci_status', 'has_unresolved_comments', 'has_unviewed_files',
+    'review_status', 'ci_status', 'has_unresolved_comments', 'has_unviewed_files', 'reviewed_by',
   ];
   const filtersNeedEnrichment = activeBoard?.columns.some((col) =>
     col.filterGroups.some((g) =>
@@ -67,7 +68,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         setGistSyncHash(currentHash);
       })
       .catch(() => {
-        // Silent failure — will retry on next refresh cycle
+        // Will retry on next refresh cycle
       })
       .finally(() => {
         isSyncingGistRef.current = false;
@@ -111,7 +112,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
       const sorted = flattenAndSort(repoData);
       setEntities(sorted);
-      setLastRefresh(new Date());
+      const now = new Date();
+      setLastRefresh(now);
+      lastRefreshRef.current = now;
       hasLoadedRef.current = true;
       if (state.activeBoardId) {
         saveEntityCache(state.activeBoardId, sorted);
@@ -139,6 +142,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         if (cached) {
           setEntities(cached.entities as GitHubEntity[]);
           setLastRefresh(cached.cachedAt);
+          lastRefreshRef.current = cached.cachedAt;
           hasLoadedRef.current = true;
         }
       }
@@ -148,8 +152,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setEntities([]);
       hasLoadedRef.current = false;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.token, reposKey, repos.length]);
+  }, [state.token, state.activeBoardId, reposKey, repos.length]);
 
   // Auto-refresh timer
   useEffect(() => {
@@ -192,11 +195,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
 
     const handleVisibility = () => {
-      if (!document.hidden && lastRefresh) {
+      if (!document.hidden && lastRefreshRef.current) {
         const thresholdMs = state.settings.autoRefreshInterval * 60 * 1000;
-        const elapsed = Date.now() - lastRefresh.getTime();
+        const elapsed = Date.now() - lastRefreshRef.current.getTime();
         if (elapsed > thresholdMs) {
-          void refresh();
+          void refreshFnRef.current?.();
         }
       }
     };
@@ -205,7 +208,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, [state.settings.refreshOnFocus, state.settings.autoRefreshInterval, state.token, reposKey, repos.length, lastRefresh, refresh]);
+  }, [state.settings.refreshOnFocus, state.settings.autoRefreshInterval, state.token, reposKey, repos.length]);
 
   return (
     <DataContext.Provider

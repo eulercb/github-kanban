@@ -24,13 +24,15 @@ function appReducer(state: AppState, action: AppAction): AppState {
       return { ...state, boards: action.boards };
     case 'ADD_BOARD':
       return { ...state, boards: [...state.boards, action.board] };
-    case 'UPDATE_BOARD':
+    case 'UPDATE_BOARD': {
+      const exists = state.boards.some((b) => b.id === action.board.id);
       return {
         ...state,
-        boards: state.boards.map((b) =>
-          b.id === action.board.id ? action.board : b
-        ),
+        boards: exists
+          ? state.boards.map((b) => b.id === action.board.id ? action.board : b)
+          : [...state.boards, action.board],
       };
+    }
     case 'DELETE_BOARD': {
       const newBoards = state.boards.filter((b) => b.id !== action.boardId);
       return {

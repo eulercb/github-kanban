@@ -43,7 +43,6 @@ export interface GitHubIssue {
   comments: number;
   pull_request?: GitHubPullRequestRef;
   repository_url: string;
-  draft?: boolean;
 }
 
 export interface GitHubPullRequest {

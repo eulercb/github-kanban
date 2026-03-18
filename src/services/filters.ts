@@ -6,12 +6,7 @@ import type {
   SortConfig,
 } from '../types';
 import { isPullRequest } from '../types';
-
-function getEntityRepo(entity: GitHubEntity): string {
-  // repository_url is like "https://api.github.com/repos/owner/repo"
-  const parts = entity.repository_url.split('/');
-  return `${parts[parts.length - 2]}/${parts[parts.length - 1]}`;
-}
+import { getEntityRepo } from '../utils/entityKey';
 
 function getEntityType(entity: GitHubEntity): string {
   return isPullRequest(entity) ? 'pull_request' : 'issue';
@@ -119,7 +114,7 @@ function matchesRule(entity: GitHubEntity, rule: FilterRule): boolean {
       return true;
   }
 
-  // Array fields (assignee, label)
+  // Array fields (assignee, label, reviewer, reviewed_by)
   if (Array.isArray(fieldValue)) {
     switch (operator) {
       case 'is':

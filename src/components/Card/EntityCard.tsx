@@ -2,17 +2,12 @@ import { type ReactElement, type MouseEvent, useState, useCallback } from 'react
 import type { GitHubEntity, GitHubPullRequest } from '../../types';
 import { isPullRequest } from '../../types';
 import { useApp } from '../../hooks/useApp';
-import { entityKey } from '../../utils/entityKey';
+import { entityKey, getEntityRepo } from '../../utils/entityKey';
 import styles from './EntityCard.module.css';
 
 interface Props {
   entity: GitHubEntity;
   columnId?: string;
-}
-
-function getEntityRepo(entity: GitHubEntity): string {
-  const parts = entity.repository_url.split('/');
-  return `${parts[parts.length - 2]}/${parts[parts.length - 1]}`;
 }
 
 function timeAgo(dateStr: string): string {
@@ -163,7 +158,6 @@ export function EntityCard({ entity, columnId }: Props) {
   const compact = state.settings.compactCards;
   const d = state.settings.cardDisplay;
   const repo = getEntityRepo(entity);
-  const pr = isPullRequest(entity);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -179,19 +173,24 @@ export function EntityCard({ entity, columnId }: Props) {
   }, []);
 
   const handleCopyUrl = useCallback(() => {
-    void navigator.clipboard.writeText(entity.html_url).then(() => {
-      setCopied(true);
-      setTimeout(() => {
+    void navigator.clipboard.writeText(entity.html_url)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => {
+          setContextMenu(null);
+          setCopied(false);
+        }, 600);
+      })
+      .catch(() => {
         setContextMenu(null);
-        setCopied(false);
-      }, 600);
-    });
+      });
   }, [entity.html_url]);
 
+  const prEntity = isPullRequest(entity) ? entity : null;
   const hasAssignees = !compact && d.showAssignees && entity.assignees.length > 0;
   const hasComments = !compact && d.showCommentCount && entity.comments > 0;
-  const hasReviewers = !compact && d.showCommentCount && pr && isPullRequest(entity) && entity.requested_reviewers.length > 0;
-  const hasPrStatus = !compact && d.showPrStatus && pr && isPullRequest(entity);
+  const hasReviewers = !compact && d.showCommentCount && !!prEntity && prEntity.requested_reviewers.length > 0;
+  const hasPrStatus = !compact && d.showPrStatus && !!prEntity;
   const showDetails = hasAssignees || hasComments || hasReviewers || hasPrStatus;
 
   return (
@@ -212,7 +211,7 @@ export function EntityCard({ entity, columnId }: Props) {
       <div className={styles.meta}>
         <span className={styles.repo}>{repo}</span>
         <span className={styles.number}>#{entity.number}</span>
-        {d.showDraftBadge && pr && isPullRequest(entity) && entity.draft && (
+        {d.showDraftBadge && prEntity && prEntity.draft && (
           <span className={styles.draftBadge}>Draft</span>
         )}
         {d.showTimeAgo && (
@@ -260,7 +259,7 @@ export function EntityCard({ entity, columnId }: Props) {
               )}
             </div>
           )}
-          {hasPrStatus && isPullRequest(entity) && <PrStatusIcons pr={entity} />}
+          {hasPrStatus && prEntity && <PrStatusIcons pr={prEntity} />}
           {hasComments && (
             <span className={styles.stat}>
               <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
@@ -269,12 +268,12 @@ export function EntityCard({ entity, columnId }: Props) {
               {entity.comments}
             </span>
           )}
-          {hasReviewers && isPullRequest(entity) && (
+          {hasReviewers && prEntity && (
             <span className={styles.stat} title="Pending reviewers">
               <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
                 <path d="M8 2c1.981 0 3.671.992 4.933 2.078 1.27 1.091 2.187 2.345 2.637 3.023a1.62 1.62 0 0 1 0 1.798c-.45.678-1.367 1.932-2.637 3.023C11.67 13.008 9.981 14 8 14c-1.981 0-3.671-.992-4.933-2.078C1.797 10.83.88 9.576.43 8.898a1.62 1.62 0 0 1 0-1.798c.45-.677 1.367-1.931 2.637-3.022C4.33 2.992 6.019 2 8 2ZM1.679 7.932a.12.12 0 0 0 0 .136c.411.622 1.241 1.75 2.366 2.717C5.176 11.758 6.527 12.5 8 12.5c1.473 0 2.825-.742 3.955-1.715 1.124-.967 1.954-2.096 2.366-2.717a.12.12 0 0 0 0-.136c-.412-.621-1.242-1.75-2.366-2.717C10.824 4.242 9.473 3.5 8 3.5c-1.473 0-2.824.742-3.955 1.715-1.124.967-1.954 2.096-2.366 2.717ZM8 10a2 2 0 1 1-.001-3.999A2 2 0 0 1 8 10Z" />
               </svg>
-              {entity.requested_reviewers.length}
+              {prEntity.requested_reviewers.length}
             </span>
           )}
         </div>

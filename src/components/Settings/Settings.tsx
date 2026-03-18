@@ -34,11 +34,15 @@ export function Settings({ onClose }: Props) {
   const [tokenError, setTokenError] = useState<string | null>(null);
   const [tokenSuccess, setTokenSuccess] = useState(false);
   const [hasGistScope, setHasGistScope] = useState<boolean | null>(null);
+  const [gistScopeChecked, setGistScopeChecked] = useState(false);
   const [gistLoading, setGistLoading] = useState(false);
   const [gistMessage, setGistMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
-    void checkGistScope().then(setHasGistScope);
+    void checkGistScope().then((result) => {
+      setHasGistScope(result);
+      setGistScopeChecked(true);
+    });
   }, []);
 
   const handleExportToGist = async () => {
@@ -136,6 +140,9 @@ export function Settings({ onClose }: Props) {
       throw new Error('Invalid configuration format');
     }
     for (const board of data.boards) {
+      if (!board.id || !board.name || !Array.isArray(board.columns) || !Array.isArray(board.repos)) {
+        throw new Error(`Invalid board structure: each board must have id, name, columns, and repos`);
+      }
       updateBoard(board);
     }
     if (data.settings) {
@@ -514,11 +521,13 @@ export function Settings({ onClose }: Props) {
                     <span>
                       <strong>gist</strong>
                       {' \u2014 '}
-                      {hasGistScope === null
+                      {!gistScopeChecked
                         ? 'Checking...'
-                        : hasGistScope
-                          ? 'Granted. Gist sync is available.'
-                          : 'Not granted. Required for Gist sync.'}
+                        : hasGistScope === null
+                          ? 'Unable to check permissions. Try refreshing the page.'
+                          : hasGistScope
+                            ? 'Granted. Gist sync is available.'
+                            : 'Not granted. Required for Gist sync.'}
                     </span>
                   </div>
                 </div>
@@ -685,7 +694,12 @@ export function Settings({ onClose }: Props) {
                     </div>
                   </>
                 )}
-                {hasGistScope === null && (
+                {hasGistScope === null && gistScopeChecked && (
+                  <p className={styles.hint}>
+                    Unable to verify Gist permissions. Try refreshing the page or check your network connection.
+                  </p>
+                )}
+                {!gistScopeChecked && (
                   <p className={styles.hint}>Checking Gist permissions...</p>
                 )}
                 {gistMessage && (
