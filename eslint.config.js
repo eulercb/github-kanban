@@ -44,7 +44,7 @@ export default defineConfig([
         destructuredArrayIgnorePattern: '^_',
         varsIgnorePattern: '^_',
       }],
-      'no-console': 'warn',
+      'no-console': 'error',
     },
   },
   {
@@ -65,7 +65,7 @@ export default defineConfig([
           attributes: true,
         },
       }],
-      '@typescript-eslint/require-await': 'warn',
+      '@typescript-eslint/require-await': 'error',
     },
   },
 ])
