@@ -308,9 +308,18 @@ function FilterValueInput({
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   if (suggestions.length > 0 && suggestions.length <= 6) {
+    // Determine the correct select value: if the stored value doesn't match
+    // any suggestion (e.g., username stored but 'me' is the option), try
+    // using displayValue as a fallback match before defaulting to the raw value.
+    const selectValue = suggestions.some((s) => s.value === value)
+      ? value
+      : suggestions.some((s) => s.value === displayValue)
+        ? displayValue
+        : value;
+
     return (
       <select
-        value={value}
+        value={selectValue}
         onChange={(e) => onChange(e.target.value)}
         className={styles.valueSelect}
       >
