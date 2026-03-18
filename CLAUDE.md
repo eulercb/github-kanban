@@ -128,6 +128,28 @@ All string comparisons are case-insensitive (`.toLowerCase()`).
 - `github-kanban` — serialized `AppState` (minus token)
 - `github-kanban-token` — GitHub PAT (stored separately for easy clearing)
 
+## Commit Format
+
+This project follows the [Conventional Commits](https://www.conventionalcommits.org/) standard:
+
+```
+<type>(<scope>): <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`
+
+Examples:
+- `feat(filters): add support for milestone filter field`
+- `fix(data): prevent concurrent refresh race condition`
+- `docs: update CLAUDE.md with commit conventions`
+- `refactor(board): extract column reordering logic`
+
+Use the body for additional context when the description alone isn't sufficient. Include `BREAKING CHANGE:` in the footer for breaking changes.
+
 ## Conventions
 
 - IDs are generated with `crypto.randomUUID()` via `utils/id.ts`
