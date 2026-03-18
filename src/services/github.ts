@@ -248,6 +248,9 @@ function enrichPr(pr: GitHubPullRequest, gql: GraphQLPrData): void {
   pr.approved_count = [...latestByAuthor.values()].filter((s) => s === 'APPROVED').length;
   pr.changes_requested_count = [...latestByAuthor.values()].filter((s) => s === 'CHANGES_REQUESTED').length;
 
+  // Users who have submitted reviews
+  pr.reviewed_by = [...latestByAuthor.keys()];
+
   // Unresolved comment threads
   pr.unresolved_comment_count = gql.reviewThreads.nodes.filter((t) => !t.isResolved).length;
 

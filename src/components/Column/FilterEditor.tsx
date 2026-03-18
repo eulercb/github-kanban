@@ -13,6 +13,7 @@ const FIELD_OPTIONS: { value: FilterField; label: string }[] = [
   { value: 'milestone', label: 'Milestone' },
   { value: 'org', label: 'Organisation' },
   { value: 'repo', label: 'Repository' },
+  { value: 'reviewed_by', label: 'Reviewed By' },
   { value: 'reviewer', label: 'Reviewer' },
   { value: 'review_status', label: 'Review Status' },
   { value: 'state', label: 'State' },
@@ -151,14 +152,14 @@ export function FilterEditor({
       return repos.map((r) => ({ value: r, label: r }));
     }
     const base = VALUE_SUGGESTIONS[field] ?? [];
-    if ((field === 'assignee' || field === 'author' || field === 'reviewer') && currentUser) {
+    if ((field === 'assignee' || field === 'author' || field === 'reviewer' || field === 'reviewed_by') && currentUser) {
       return [{ value: 'me', label: 'me' }, ...base];
     }
     return base;
   };
 
   const getDisplayValue = (field: FilterField, value: string): string => {
-    if ((field === 'assignee' || field === 'author' || field === 'reviewer') && currentUser && value === currentUser) {
+    if ((field === 'assignee' || field === 'author' || field === 'reviewer' || field === 'reviewed_by') && currentUser && value === currentUser) {
       return 'me';
     }
     const suggestions = VALUE_SUGGESTIONS[field];
@@ -170,7 +171,7 @@ export function FilterEditor({
   };
 
   const resolveValue = (field: FilterField, displayVal: string): string => {
-    if ((field === 'assignee' || field === 'author' || field === 'reviewer') && displayVal === 'me' && currentUser) {
+    if ((field === 'assignee' || field === 'author' || field === 'reviewer' || field === 'reviewed_by') && displayVal === 'me' && currentUser) {
       return currentUser;
     }
     return displayVal;
