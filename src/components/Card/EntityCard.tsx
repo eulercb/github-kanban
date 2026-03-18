@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import { type ReactElement, type MouseEvent, useState, useCallback } from 'react';
 import type { GitHubEntity, GitHubPullRequest } from '../../types';
 import { isPullRequest } from '../../types';
 import { useApp } from '../../hooks/useApp';
@@ -76,7 +76,7 @@ function StateIcon({ entity }: { entity: GitHubEntity }) {
 }
 
 function PrStatusIcons({ pr }: { pr: GitHubPullRequest }) {
-  const icons: React.ReactElement[] = [];
+  const icons: ReactElement[] = [];
 
   // CI status
   if (pr.ci_status === 'success') {
@@ -167,7 +167,7 @@ export function EntityCard({ entity, columnId }: Props) {
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const handleContextMenu = useCallback((e: React.MouseEvent) => {
+  const handleContextMenu = useCallback((e: MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setContextMenu({ x: e.clientX, y: e.clientY });
@@ -179,7 +179,7 @@ export function EntityCard({ entity, columnId }: Props) {
   }, []);
 
   const handleCopyUrl = useCallback(() => {
-    navigator.clipboard.writeText(entity.html_url).then(() => {
+    void navigator.clipboard.writeText(entity.html_url).then(() => {
       setCopied(true);
       setTimeout(() => {
         setContextMenu(null);
@@ -282,7 +282,7 @@ export function EntityCard({ entity, columnId }: Props) {
     </a>
     {contextMenu && (
       <>
-        <div className={styles.contextBackdrop} onClick={closeContextMenu} />
+        <div className={styles.contextBackdrop} role="presentation" onClick={closeContextMenu} onKeyDown={(e) => { if (e.key === 'Escape') closeContextMenu(); }} />
         <div
           className={styles.contextMenu}
           style={{ left: contextMenu.x, top: contextMenu.y }}

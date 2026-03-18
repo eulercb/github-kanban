@@ -38,7 +38,7 @@ export function Settings({ onClose }: Props) {
   const [gistMessage, setGistMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
-    checkGistScope().then(setHasGistScope);
+    void checkGistScope().then(setHasGistScope);
   }, []);
 
   const handleExportToGist = async () => {
@@ -191,8 +191,8 @@ export function Settings({ onClose }: Props) {
   };
 
   return (
-    <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+    <div className={styles.overlay} role="presentation" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }} onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}>
+      <div className={styles.modal}>
         <div className={styles.header}>
           <h2>Settings</h2>
           <button className={styles.closeBtn} onClick={onClose}>
@@ -233,8 +233,9 @@ export function Settings({ onClose }: Props) {
           {activeTab === 'general' && (
             <div className={styles.section}>
               <div className={styles.field}>
-                <label className={styles.label}>Theme</label>
+                <label htmlFor="settings-theme" className={styles.label}>Theme</label>
                 <select
+                  id="settings-theme"
                   value={settings.theme}
                   onChange={(e) =>
                     updateSettings({ ...settings, theme: e.target.value as ThemeMode })
@@ -248,10 +249,11 @@ export function Settings({ onClose }: Props) {
               </div>
 
               <div className={styles.field}>
-                <label className={styles.label}>Auto-refresh</label>
+                <label htmlFor="settings-auto-refresh" className={styles.label}>Auto-refresh</label>
                 <div className={styles.toggleRow}>
-                  <label className={styles.toggle}>
+                  <label className={styles.toggle} aria-label="Auto-refresh">
                     <input
+                      id="settings-auto-refresh"
                       type="checkbox"
                       checked={settings.autoRefreshEnabled}
                       onChange={(e) =>
@@ -271,10 +273,11 @@ export function Settings({ onClose }: Props) {
 
               {settings.autoRefreshEnabled && (
                 <div className={styles.field}>
-                  <label className={styles.label}>
+                  <label htmlFor="settings-refresh-interval" className={styles.label}>
                     Refresh interval (minutes)
                   </label>
                   <input
+                    id="settings-refresh-interval"
                     type="number"
                     min={1}
                     max={60}
@@ -295,10 +298,11 @@ export function Settings({ onClose }: Props) {
               )}
 
               <div className={styles.field}>
-                <label className={styles.label}>Refresh on window focus</label>
+                <label htmlFor="settings-refresh-on-focus" className={styles.label}>Refresh on window focus</label>
                 <div className={styles.toggleRow}>
-                  <label className={styles.toggle}>
+                  <label className={styles.toggle} aria-label="Refresh on window focus">
                     <input
+                      id="settings-refresh-on-focus"
                       type="checkbox"
                       checked={settings.refreshOnFocus}
                       onChange={(e) =>
@@ -317,10 +321,11 @@ export function Settings({ onClose }: Props) {
               </div>
 
               <div className={styles.field}>
-                <label className={styles.label}>Loading bar</label>
+                <label htmlFor="settings-loading-bar" className={styles.label}>Loading bar</label>
                 <div className={styles.toggleRow}>
-                  <label className={styles.toggle}>
+                  <label className={styles.toggle} aria-label="Loading bar">
                     <input
+                      id="settings-loading-bar"
                       type="checkbox"
                       checked={settings.showLoadingBar}
                       onChange={(e) =>
@@ -339,10 +344,11 @@ export function Settings({ onClose }: Props) {
               </div>
 
               <div className={styles.field}>
-                <label className={styles.label}>Animated transitions</label>
+                <label htmlFor="settings-animations" className={styles.label}>Animated transitions</label>
                 <div className={styles.toggleRow}>
-                  <label className={styles.toggle}>
+                  <label className={styles.toggle} aria-label="Animated transitions">
                     <input
+                      id="settings-animations"
                       type="checkbox"
                       checked={settings.animationsEnabled}
                       onChange={(e) =>
@@ -361,10 +367,11 @@ export function Settings({ onClose }: Props) {
               </div>
 
               <div className={styles.field}>
-                <label className={styles.label}>Card display</label>
+                <label htmlFor="settings-compact-cards" className={styles.label}>Card display</label>
                 <div className={styles.toggleRow}>
-                  <label className={styles.toggle}>
+                  <label className={styles.toggle} aria-label="Compact mode">
                     <input
+                      id="settings-compact-cards"
                       type="checkbox"
                       checked={settings.compactCards}
                       onChange={(e) =>
@@ -415,7 +422,7 @@ export function Settings({ onClose }: Props) {
           {activeTab === 'token' && (
             <div className={styles.section}>
               <div className={styles.field}>
-                <label className={styles.label}>Personal Access Token</label>
+                <span className={styles.label}>Personal Access Token</span>
                 <p className={styles.hint}>
                   Replace your GitHub token if it has expired or you want to
                   switch accounts.
@@ -445,7 +452,7 @@ export function Settings({ onClose }: Props) {
                       value={newToken}
                       onChange={(e) => setNewToken(e.target.value)}
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter') handleReplaceToken();
+                        if (e.key === 'Enter') void handleReplaceToken();
                         if (e.key === 'Escape') {
                           setShowTokenInput(false);
                           setNewToken('');
@@ -454,7 +461,6 @@ export function Settings({ onClose }: Props) {
                       }}
                       placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
                       className={styles.input}
-                      autoFocus
                       disabled={tokenValidating}
                     />
                     {tokenError && (
@@ -487,7 +493,7 @@ export function Settings({ onClose }: Props) {
               <div className={styles.divider} />
 
               <div className={styles.field}>
-                <label className={styles.label}>Permissions</label>
+                <span className={styles.label}>Permissions</span>
                 <div className={styles.permissionList}>
                   <div className={styles.permissionItem}>
                     <span className={hasGistScope ? styles.permissionGranted : styles.permissionMissing}>
@@ -543,7 +549,6 @@ export function Settings({ onClose }: Props) {
                     <div key={board.id} className={styles.boardItem}>
                       {editingBoard === board.id ? (
                         <input
-                          autoFocus
                           value={editBoardName}
                           onChange={(e) => setEditBoardName(e.target.value)}
                           onBlur={() => saveEditBoard(board)}
@@ -590,7 +595,7 @@ export function Settings({ onClose }: Props) {
           {activeTab === 'data' && (
             <div className={styles.section}>
               <div className={styles.field}>
-                <label className={styles.label}>Export Configuration</label>
+                <span className={styles.label}>Export Configuration</span>
                 <p className={styles.hint}>
                   Export all boards and settings to a JSON file. You can import
                   this file on another device.
@@ -601,7 +606,7 @@ export function Settings({ onClose }: Props) {
               </div>
 
               <div className={styles.field}>
-                <label className={styles.label}>Import Configuration</label>
+                <span className={styles.label}>Import Configuration</span>
                 <p className={styles.hint}>
                   Import boards and settings from a previously exported file.
                   Existing boards with the same ID will be overwritten.
@@ -618,7 +623,7 @@ export function Settings({ onClose }: Props) {
               </div>
 
               <div className={styles.field}>
-                <label className={styles.label}>Paste Configuration</label>
+                <span className={styles.label}>Paste Configuration</span>
                 <p className={styles.hint}>
                   Paste a JSON configuration below. You can get this from an
                   export, or ask an AI assistant to generate one for you.
@@ -648,7 +653,7 @@ export function Settings({ onClose }: Props) {
               <div className={styles.divider} />
 
               <div className={styles.field}>
-                <label className={styles.label}>GitHub Gist Sync</label>
+                <span className={styles.label}>GitHub Gist Sync</span>
                 {hasGistScope === false && (
                   <p className={styles.hint}>
                     Your token does not include the <code>gist</code> scope.

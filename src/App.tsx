@@ -37,7 +37,7 @@ function AppContent() {
       }
     };
 
-    checkToken();
+    void checkToken();
   }, [state.token, setUser, setToken]);
 
   if (isValidating) {

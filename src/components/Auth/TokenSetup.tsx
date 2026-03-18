@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { validateToken } from '../../services/github';
-import { initOctokit } from '../../services/github';
+import { validateToken, initOctokit } from '../../services/github';
 import { useApp } from '../../hooks/useApp';
 import styles from './TokenSetup.module.css';
 
@@ -44,7 +43,7 @@ export function TokenSetup() {
         </div>
         <h1 className={styles.title}>GitHub Kanban Board</h1>
         <p className={styles.description}>
-          Connect your GitHub account to get started. You'll need a Personal
+          Connect your GitHub account to get started. You&apos;ll need a Personal
           Access Token with read access to your repositories.
         </p>
 
@@ -61,12 +60,12 @@ export function TokenSetup() {
                 GitHub Token Settings
               </a>
             </li>
-            <li>Give it a descriptive name (e.g., "Kanban Board")</li>
+            <li>Give it a descriptive name (e.g., &quot;Kanban Board&quot;)</li>
             <li>
               Select scopes: <code>repo</code> (for private repos) or{' '}
               <code>public_repo</code> (for public repos only)
             </li>
-            <li>Click "Generate token" and copy it</li>
+            <li>Click &quot;Generate token&quot; and copy it</li>
           </ol>
           <div className={styles.scopeOption}>
             <strong>Optional:</strong> Add the <code>gist</code> scope to
@@ -75,7 +74,7 @@ export function TokenSetup() {
             You can always add this scope later by editing your token.
           </div>
           <p className={styles.note}>
-            Tip: For fine-grained tokens, grant "Read" access to Issues and
+            Tip: For fine-grained tokens, grant &quot;Read&quot; access to Issues and
             Pull Requests.
           </p>
         </div>
@@ -92,7 +91,6 @@ export function TokenSetup() {
               onChange={(e) => setTokenInput(e.target.value)}
               placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
               className={styles.input}
-              autoFocus
               disabled={isValidating}
             />
           </div>

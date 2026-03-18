@@ -123,7 +123,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
       isRefreshingRef.current = false;
     }
-  }, [state.token, repos, needsEnrichment, syncGistIfNeeded, flattenAndSort]);
+  }, [state.token, repos, needsEnrichment, syncGistIfNeeded, flattenAndSort, state.activeBoardId]);
 
   // Keep ref in sync so effects can call the latest refresh without depending on it
   refreshFnRef.current = refresh;
@@ -143,7 +143,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      refreshFnRef.current?.();
+      void refreshFnRef.current?.();
     } else {
       setEntities([]);
       hasLoadedRef.current = false;
@@ -166,7 +166,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       const intervalMs = state.settings.autoRefreshInterval * 60 * 1000;
       refreshTimerRef.current = setInterval(() => {
         if (!document.hidden) {
-          refresh();
+          void refresh();
         }
       }, intervalMs);
     }
@@ -196,7 +196,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         const thresholdMs = state.settings.autoRefreshInterval * 60 * 1000;
         const elapsed = Date.now() - lastRefresh.getTime();
         if (elapsed > thresholdMs) {
-          refresh();
+          void refresh();
         }
       }
     };
