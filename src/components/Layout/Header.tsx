@@ -45,7 +45,7 @@ export function Header() {
         <div className={styles.right}>
           <button
             className={styles.iconButton}
-            onClick={() => refresh()}
+            onClick={() => void refresh()}
             disabled={isLoading}
             title={refreshLabel ? `Last updated ${refreshLabel}` : 'Refresh data'}
           >

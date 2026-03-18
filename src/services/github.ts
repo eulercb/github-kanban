@@ -79,7 +79,7 @@ export async function fetchRepoIssues(
           ? {
               id: item.milestone.id,
               title: item.milestone.title,
-              state: item.milestone.state as 'open' | 'closed',
+              state: item.milestone.state,
               html_url: item.milestone.html_url,
             }
           : null,
@@ -150,7 +150,7 @@ export async function fetchRepoPullRequests(
           ? {
               id: item.milestone.id,
               title: item.milestone.title,
-              state: item.milestone.state as 'open' | 'closed',
+              state: item.milestone.state,
               html_url: item.milestone.html_url,
             }
           : null,

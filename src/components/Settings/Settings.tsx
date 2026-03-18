@@ -480,7 +480,7 @@ export function Settings({ onClose }: Props) {
                       </button>
                       <button
                         className={styles.saveBtn}
-                        onClick={handleReplaceToken}
+                        onClick={() => void handleReplaceToken()}
                         disabled={!newToken.trim() || tokenValidating}
                       >
                         {tokenValidating ? 'Validating...' : 'Update Token'}
@@ -670,14 +670,14 @@ export function Settings({ onClose }: Props) {
                     <div className={styles.gistActions}>
                       <button
                         className={styles.actionBtn}
-                        onClick={handleExportToGist}
+                        onClick={() => void handleExportToGist()}
                         disabled={gistLoading}
                       >
                         {gistLoading ? 'Saving...' : 'Save to Gist'}
                       </button>
                       <button
                         className={styles.actionBtn}
-                        onClick={handleImportFromGist}
+                        onClick={() => void handleImportFromGist()}
                         disabled={gistLoading}
                       >
                         {gistLoading ? 'Loading...' : 'Restore from Gist'}
