@@ -39,13 +39,18 @@ export default defineConfig([
     rules: {
       'css-modules/no-unused-class': 'error',
       'css-modules/no-undef-class': 'error',
+      '@typescript-eslint/no-unused-vars': ['error', {
+        argsIgnorePattern: '^_',
+        destructuredArrayIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+      }],
       'no-console': 'warn',
     },
   },
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
-      tseslint.configs.recommendedTypeChecked,
+      tseslint.configs.recommendedTypeCheckedOnly,
     ],
     languageOptions: {
       parserOptions: {
@@ -54,15 +59,6 @@ export default defineConfig([
       },
     },
     rules: {
-      // Only enable the type-checked rules we specifically want,
-      // disable the rest to avoid duplicating tseslint.configs.recommended
-      ...Object.fromEntries(
-        Object.keys(tseslint.configs.recommendedTypeChecked
-          .reduce((acc, cfg) => ({ ...acc, ...cfg.rules }), {}))
-          .filter(rule => rule !== '@typescript-eslint/no-floating-promises')
-          .map(rule => [rule, 'off'])
-      ),
-      '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/no-misused-promises': ['error', {
         checksVoidReturn: {
           arguments: true,

@@ -32,14 +32,14 @@ export function loadState(): AppState {
     if (!raw) {
       return { ...DEFAULT_STATE, token };
     }
-    const parsed = JSON.parse(raw);
+    const parsed = JSON.parse(raw) as Partial<AppState> & Record<string, unknown>;
     return {
       ...DEFAULT_STATE,
       ...parsed,
       settings: {
         ...DEFAULT_SETTINGS,
-        ...parsed.settings,
-        cardDisplay: { ...DEFAULT_CARD_DISPLAY, ...parsed.settings?.cardDisplay },
+        ...(parsed.settings as Partial<AppSettings> | undefined),
+        cardDisplay: { ...DEFAULT_CARD_DISPLAY, ...(parsed.settings as Partial<AppSettings> | undefined)?.cardDisplay },
       },
       token,
     };
@@ -119,7 +119,7 @@ export function loadEntityCache(boardId: string): { entities: unknown[]; cachedA
     const raw = sessionStorage.getItem(ENTITY_CACHE_PREFIX + boardId);
     const time = sessionStorage.getItem(ENTITY_CACHE_TIME_PREFIX + boardId);
     if (!raw || !time) return null;
-    return { entities: JSON.parse(raw), cachedAt: new Date(time) };
+    return { entities: JSON.parse(raw) as unknown[], cachedAt: new Date(time) };
   } catch {
     return null;
   }
