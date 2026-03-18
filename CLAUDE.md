@@ -150,6 +150,8 @@ Examples:
 
 Use the body for additional context when the description alone isn't sufficient. Include `BREAKING CHANGE:` in the footer for breaking changes.
 
+Important: Do **not** add `Co-authored-by` trailers or `claude.ai` links to commit messages.
+
 ## Conventions
 
 - IDs are generated with `crypto.randomUUID()` via `utils/id.ts`
