@@ -63,6 +63,13 @@ export default defineConfig([
           .map(rule => [rule, 'off'])
       ),
       '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/no-misused-promises': ['error', {
+        checksVoidReturn: {
+          arguments: true,
+          attributes: true,
+        },
+      }],
+      '@typescript-eslint/require-await': 'warn',
     },
   },
 ])

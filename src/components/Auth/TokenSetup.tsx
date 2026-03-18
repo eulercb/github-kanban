@@ -79,7 +79,7 @@ export function TokenSetup() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
+        <form onSubmit={(e) => void handleSubmit(e)} className={styles.form}>
           <div className={styles.inputGroup}>
             <label htmlFor="token-input" className={styles.label}>
               Personal Access Token
