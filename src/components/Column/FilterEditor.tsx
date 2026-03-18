@@ -309,8 +309,8 @@ function FilterValueInput({
 
   if (suggestions.length > 0 && suggestions.length <= 6) {
     // Determine the correct select value: if the stored value doesn't match
-    // any suggestion (e.g., username stored but 'me' is the option), fall back
-    // to displayValue which maps resolved values back to suggestion values.
+    // any suggestion (e.g., username stored but 'me' is the option), try
+    // using displayValue as a fallback match before defaulting to the raw value.
     const selectValue = suggestions.some((s) => s.value === value)
       ? value
       : suggestions.some((s) => s.value === displayValue)
