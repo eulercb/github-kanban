@@ -172,7 +172,7 @@ export function KanbanColumn({
     >
       {contextMenu && (
         <>
-          <div className={styles.contextBackdrop} onClick={closeContextMenu} onContextMenu={(e) => { e.preventDefault(); closeContextMenu(); }} />
+          <div className={styles.contextBackdrop} role="presentation" onClick={closeContextMenu} onContextMenu={(e) => { e.preventDefault(); closeContextMenu(); }} onKeyDown={(e) => { if (e.key === 'Escape') closeContextMenu(); }} />
           <div
             className={styles.contextMenu}
             style={{ left: contextMenu.x, top: contextMenu.y }}
@@ -204,7 +204,6 @@ export function KanbanColumn({
         <div className={styles.headerLeft}>
           {isEditing ? (
             <input
-              autoFocus
               value={editTitle}
               onChange={(e) => setEditTitle(e.target.value)}
               onBlur={handleTitleSubmit}
@@ -218,11 +217,14 @@ export function KanbanColumn({
               onFocus={(e) => e.target.select()}
             />
           ) : (
-            <h3
-              className={styles.title}
-              onClick={handleTitleClick}
-            >
-              {column.title}
+            <h3 className={styles.title}>
+              <button
+                type="button"
+                className={styles.titleBtn}
+                onClick={handleTitleClick}
+              >
+                {column.title}
+              </button>
             </h3>
           )}
 

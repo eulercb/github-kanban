@@ -133,7 +133,7 @@ export function BoardSetup({ onSave, onCancel, initialBoard }: Props) {
     const scopeLogin = scopeToUser ? state.currentUser?.login : undefined;
     const scopeOrgs = scopeToUser ? userOrgs : undefined;
 
-    Promise.resolve().then(() => { if (!cancelled) setSearching(true); });
+    void Promise.resolve().then(() => { if (!cancelled) setSearching(true); });
 
     searchRepos(debouncedQuery, scopeLogin, scopeOrgs)
       .then((results) => {
@@ -220,21 +220,22 @@ export function BoardSetup({ onSave, onCancel, initialBoard }: Props) {
       </h2>
 
       <div className={styles.field}>
-        <label className={styles.label}>Board Name</label>
+        <label htmlFor="board-name" className={styles.label}>Board Name</label>
         <input
+          id="board-name"
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="e.g., My Project Board"
           className={styles.input}
-          autoFocus
         />
       </div>
 
       <div className={styles.field}>
-        <label className={styles.label}>Repositories</label>
+        <label htmlFor="repo-search" className={styles.label}>Repositories</label>
         <div className={styles.repoInput}>
           <input
+            id="repo-search"
             type="text"
             value={repoInput}
             onChange={(e) => setRepoInput(e.target.value)}
@@ -313,7 +314,7 @@ export function BoardSetup({ onSave, onCancel, initialBoard }: Props) {
 
       {!isEditing && (
         <div className={styles.field}>
-          <label className={styles.label}>Column Template</label>
+          <span className={styles.label}>Column Template</span>
           <div className={styles.presets}>
             {PRESET_COLUMNS.map((preset, i) => (
               <button
@@ -381,10 +382,10 @@ export function BoardSetup({ onSave, onCancel, initialBoard }: Props) {
           <details className={styles.aiGuideDetails}>
             <summary>Alternative: use any AI assistant</summary>
             <p>
-              You don't need Claude Code. Ask any AI assistant to generate a
+              You don&apos;t need Claude Code. Ask any AI assistant to generate a
               GitHub Kanban Board JSON configuration. Describe the repos you
-              want to track and what columns you need (e.g., "my open PRs",
-              "PRs with failing CI", "issues assigned to me"). Then paste the
+              want to track and what columns you need (e.g., &quot;my open PRs&quot;,
+              &quot;PRs with failing CI&quot;, &quot;issues assigned to me&quot;). Then paste the
               JSON in Settings.
             </p>
           </details>

@@ -211,7 +211,9 @@ export function BoardView() {
               <>
                 <div
                   className={styles.boardMenuBackdrop}
+                  role="presentation"
                   onClick={() => setShowBoardMenu(false)}
+                  onKeyDown={(e) => { if (e.key === 'Escape') setShowBoardMenu(false); }}
                 />
                 <div className={styles.boardMenu}>
                   <div className={styles.boardMenuSection}>
@@ -276,7 +278,7 @@ export function BoardView() {
         </div>
       </div>
 
-      <div className={styles.board} ref={boardRef} onClick={handleBoardClick}>
+      <div className={styles.board} ref={boardRef} role="presentation" onClick={handleBoardClick} onKeyDown={(e) => { if (e.key === 'Escape' && openFilterColumnId) setOpenFilterColumnId(null); }}>
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}

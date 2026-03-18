@@ -39,13 +39,22 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.titleBtn {
+  all: unset;
   cursor: text;
   padding: 2px 4px;
   border-radius: var(--radius-sm);
   transition: background var(--transition-speed);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  width: 100%;
 }
 
-.title:hover {
+.titleBtn:hover {
   background: var(--bg-primary);
 }
 

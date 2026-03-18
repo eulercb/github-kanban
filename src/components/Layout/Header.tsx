@@ -77,7 +77,9 @@ export function Header() {
                 <>
                   <div
                     className={styles.menuBackdrop}
+                    role="presentation"
                     onClick={() => setShowUserMenu(false)}
+                    onKeyDown={(e) => { if (e.key === 'Escape') setShowUserMenu(false); }}
                   />
                   <div className={styles.menu}>
                     <div className={styles.menuHeader}>
