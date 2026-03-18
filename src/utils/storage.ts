@@ -49,12 +49,16 @@ export function loadState(): AppState {
 }
 
 export function saveState(state: AppState): void {
-  const { token, ...rest } = state;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(rest));
-  if (token) {
-    localStorage.setItem(TOKEN_KEY, token);
-  } else {
-    localStorage.removeItem(TOKEN_KEY);
+  try {
+    const { token, ...rest } = state;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(rest));
+    if (token) {
+      localStorage.setItem(TOKEN_KEY, token);
+    } else {
+      localStorage.removeItem(TOKEN_KEY);
+    }
+  } catch {
+    // localStorage may be full or unavailable — state will not persist
   }
 }
 

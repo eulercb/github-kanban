@@ -66,10 +66,11 @@ All types are in one file. The most important ones:
 
 - **`GitHubEntity`** = `GitHubIssue | GitHubPullRequest` — the union type for all items displayed on the board
 - **`BoardConfig`** — a board with `id`, `name`, `repos: string[]`, `columns: ColumnConfig[]`
-- **`ColumnConfig`** — a column with `id`, `title`, `filters: FilterRule[]`, `filterCombination: 'and' | 'or'`, `collapsed`, `width`
+- **`ColumnConfig`** — a column with `id`, `title`, `filterGroups: FilterGroup[]`, `collapsed`, `width`, `sortBy?: SortConfig`
+- **`FilterGroup`** — `{ id, filters: FilterRule[], combination: 'and' | 'or' }` — groups are OR'd together
 - **`FilterRule`** — `{ id, field: FilterField, operator: FilterOperator, value: string }`
-- **`AppState`** — top-level state: `token`, `currentUser`, `boards`, `activeBoardId`, `settings`
-- **`AppSettings`** — `theme`, `autoRefreshEnabled`, `autoRefreshInterval`, `refreshOnFocus`, `compactCards`
+- **`AppState`** — top-level state: `token`, `currentUser`, `boards`, `activeBoardId`, `settings`, `gistId`
+- **`AppSettings`** — `theme`, `autoRefreshEnabled`, `autoRefreshInterval`, `refreshOnFocus`, `compactCards`, `cardDisplay`, `showLoadingBar`, `animationsEnabled`
 
 Type guards: `isPullRequest(entity)` and `isIssue(entity)` discriminate the union.
 
@@ -77,14 +78,15 @@ Type guards: `isPullRequest(entity)` and `isIssue(entity)` discriminate the unio
 
 The filter engine is the core logic of the app. Key functions:
 
-- **`getColumnEntities(allEntities, column)`** — returns entities matching the column's filters
-- **`filterEntities(entities, filters, combination)`** — applies AND/OR filter logic
+- **`getColumnEntities(allEntities, column)`** — returns entities matching the column's filters (public API)
+- **`sortEntities(entities, sort)`** — sorts entities by a given field and direction
 - **`matchesRule(entity, rule)`** — evaluates a single filter rule against an entity
 
 Filter fields with special behavior:
 - `assignee`, `label`: These are **array fields** — the operator checks against all values in the array
 - `state`: Returns `'merged'` for PRs with `merged_at` set, otherwise the raw `state` field
-- `review_status`: Returns `'pending'` if `requested_reviewers.length > 0`, else `'none'`
+- `review_status`: Returns GraphQL-enriched `review_decision` when available (`approved`, `changes_requested`, `review_required`), falls back to `'review_required'` if there are requested reviewers, else `'none'`
+- `reviewed_by`: Array of user logins who have submitted reviews (populated via GraphQL enrichment)
 - `draft`: Always `'false'` for issues
 - `has_pull_request`: Only meaningful for issues (checks `pull_request` field presence)
 - `repo`: Extracted from `repository_url` by splitting on `/`
@@ -96,23 +98,25 @@ All string comparisons are case-insensitive (`.toLowerCase()`).
 - Uses a **singleton Octokit instance** (`initOctokit` / `getOctokit` / `clearOctokit`)
 - `fetchRepoIssues` and `fetchRepoPullRequests` use paginated iteration (100 per page, max 500 items)
 - `fetchAllRepoData` fetches issues + PRs for all repos in parallel, filtering out pseudo-PR issues from the issues endpoint
+- `enrichPullRequests` uses batched GraphQL queries to fetch review decisions, CI status, unresolved comment counts, and unviewed file counts
 - `validateToken` calls `users.getAuthenticated` to verify the token
 - `searchRepos` wraps the GitHub search API for repo discovery
+- Gist sync: `saveConfigToGist`, `loadConfigFromGist`, `findConfigGist` handle configuration backup/restore via private GitHub Gists
 
 ## Contexts
 
 ### AppContext (`contexts/AppContext.tsx`)
 - **Provider**: `AppProvider` — wraps the entire app
-- **Hook**: `useApp()` — returns `{ state, dispatch, setToken, setUser, addBoard, updateBoard, deleteBoard, setActiveBoard, updateSettings, logout }`
-- **Reducer actions**: `SET_TOKEN`, `SET_USER`, `SET_BOARDS`, `ADD_BOARD`, `UPDATE_BOARD`, `DELETE_BOARD`, `SET_ACTIVE_BOARD`, `SET_SETTINGS`, `SET_THEME`, `LOAD_STATE`, `LOGOUT`
+- **Hook**: `useApp()` — returns `{ state, dispatch, setToken, setUser, addBoard, updateBoard, deleteBoard, setActiveBoard, updateSettings, setGistId, logout }`
+- **Reducer actions**: `SET_TOKEN`, `SET_USER`, `SET_BOARDS`, `ADD_BOARD`, `UPDATE_BOARD`, `DELETE_BOARD`, `SET_ACTIVE_BOARD`, `SET_SETTINGS`, `SET_THEME`, `SET_GIST_ID`, `LOAD_STATE`, `LOGOUT`
 - Auto-persists to `localStorage` on every state change
 
 ### DataContext (`contexts/DataContext.tsx`)
 - **Provider**: `DataProvider` — wraps authenticated content (inside AppProvider)
-- **Hook**: `useData()` — returns `{ entities, isLoading, lastRefresh, error, refresh }`
+- **Hook**: `useData()` — returns `{ entities, isLoading, progress, lastRefresh, error, refresh }`
 - Fetches data when repos change or on manual refresh
 - Auto-refresh timer: fires at `settings.autoRefreshInterval` minutes, skips if `document.hidden`
-- Focus refresh: triggers on `visibilitychange` if >30s since last refresh
+- Focus refresh: triggers on `visibilitychange` if more than `autoRefreshInterval` minutes have elapsed since last refresh
 - Prevents concurrent refreshes via `isRefreshingRef`
 
 ## Styling
@@ -154,6 +158,7 @@ Important: Do **not** add `Co-authored-by` trailers or `claude.ai` links to comm
 
 ## Conventions
 
+- **Never use `eslint-disable` comments** — all lint rules must be respected. If a rule blocks your code, fix the code to comply rather than suppressing the rule.
 - IDs are generated with `crypto.randomUUID()` via `utils/id.ts`
 - All components use named exports (except `App` which is default)
 - Each component has a co-located `*.module.css` file
@@ -192,9 +197,6 @@ Important: Do **not** add `Co-authored-by` trailers or `claude.ai` links to comm
 
 ## Known Limitations
 
-- Preset column templates use `{{user}}` as a placeholder for the current user login, but this is **not** dynamically replaced — the user must manually enter their login when using presets
-- `review_status` filter only distinguishes `'pending'` (has requested reviewers) vs `'none'` — it does not fetch actual review states (approved, changes_requested) from the GitHub API, which would require additional API calls
 - Max 500 issues and 500 PRs per repo to avoid excessive API usage
 - `getUserRepos()` is exported but not currently used in the UI — `searchRepos()` is used instead for the board setup repo search
 - The `width` field on `ColumnConfig` is defined but not used for dynamic column sizing (columns are fixed at 340px)
-- The `Common/` component directory exists but is empty
