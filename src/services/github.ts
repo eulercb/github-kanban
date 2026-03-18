@@ -241,9 +241,12 @@ function enrichPr(pr: GitHubPullRequest, gql: GraphQLPrData): void {
   // Count unique latest reviews by author
   const latestByAuthor = new Map<string, string>();
   for (const r of gql.reviews.nodes) {
-    if (r.author?.login) {
-      latestByAuthor.set(r.author.login, r.state);
-    }
+    const login = r.author?.login;
+    const state = r.state;
+    if (!login) continue;
+    // Skip in-progress (not yet submitted) reviews
+    if (state === 'PENDING') continue;
+    latestByAuthor.set(login, state);
   }
   pr.approved_count = [...latestByAuthor.values()].filter((s) => s === 'APPROVED').length;
   pr.changes_requested_count = [...latestByAuthor.values()].filter((s) => s === 'CHANGES_REQUESTED').length;
